@@ -15,6 +15,7 @@ This page documents all business-relevant changes to our API.
 | **Added**      | `POST` /cargosoft/shipment | Added new shipment create endpoint.                                                                    | No changes to existing integrations are required.                | 2026.1 |
 | **Added**      | Use cases                  | Added new use case to create a shipment - [see](#section/use-cases/create-a-shipment).                  | No changes to existing integrations are required.                | 2026.1 |
 | **Added**      | E-File                     | Added support for E-File - [see](#section/use-cases/attach-an-e-file-document-to-a-shipment).           | No changes to existing integrations are required.                | 2026.1 |
+| **Added**      | Provider status            | Added `POST /cargosoft/status` to create a provider status - [see](#section/use-cases/attach-a-status-to-a-shipment). | No changes to existing integrations are required. | 2026.1 |
 | **Added**      | Basic data                 | Added new edi code conversion endpoints.                                                               | No changes to existing integrations are required.                | 2026.1 |
 | **Deprecated** | ShipmentEventQualifier     | The shipment event qualifer `TRANSSHIPMENT` is now deprecated and will be removed in a future version. | Use the `TRANSSHIPMENT_ARRIVAL` shipment event qualifer instead. | 2026.1 |
 
@@ -186,13 +187,14 @@ have in mind that the test environment will be reset every night!
 
 The following use cases describe common integration workflows. Every request requires a JWT in the
 `Authorization: Bearer <token>` header. For details about retrieving and using a token, see
-[Authorization](#CHAPTER_AUTHORIZATION). The sequence diagrams omit token retrieval to keep the workflows focused.
+[Authorization](#CHAPTER_AUTHORIZATION). The sequence diagrams show token retrieval as a referenced flow.
 
 | Goal | Primary endpoint | Result |
 |---|---|---|
 | Create a shipment | `POST /cargosoft/shipment` | A new shipment with its unique ID and CargoSoft shipment number |
 | Retrieve a shipment | `POST /cargosoft/shipment/lookup` | Matching shipments and their IDs |
 | Attach an E-File document | `POST /cargosoft/efile` | A stored document linked to an existing shipment |
+| Attach a status | `POST /cargosoft/status` | A provider status associated with an existing shipment |
 | Retrieve shipment events | `GET /cargosoft/shipment/{id}/events` | The available CargoSoft events for a shipment |
 
 ## Create a shipment
@@ -384,6 +386,119 @@ document to the resolved shipment.
   document was stored. Retry only when it is absent. If a `503` response contains `Retry-After`, wait for the stated
   interval before retrying.
 
+## Attach a status to a shipment
+
+<p id='CHAPTER_STATUS_SHIPMENT'></p>
+
+**Goal**
+
+Create a provider status and associate it with an existing shipment through its CargoSoft client and shipment number.
+
+**Endpoints**
+
+- Use `POST /cargosoft/shipment/lookup` to identify the shipment and confirm its client and shipment number.
+- Use [`POST /cargosoft/status`](#operation/createProviderStatus) to create the provider status.
+
+**Prerequisites**
+
+- The API user must be allowed to call both the shipment lookup and provider status endpoints.
+- The endpoints must be available for the installed CargoSoft version and enabled by CargoSoft.
+- The provider and provider status must be configured in the customer's CargoSoft master data.
+- The customer-specific client, provider, and provider status codes must be known.
+
+**Sequence**
+
+![AttachStatusToShipment][SeqAttachStatusToShipment]
+
+[SeqAttachStatusToShipment]: ./resources/Seq_attach_status_to_shipment.svg "Use case to attach a status to a shipment"
+
+**Workflow**
+
+1. Look up the shipment with criteria that identify exactly one shipment. A CargoSoft shipment number is unique
+   only in combination with its client, so both identifiers should be supplied with exact matching:
+
+```json
+[
+  {
+    "match_mode": "EQUALS",
+    "key": "CLIENT",
+    "value": "001"
+  },
+  {
+    "match_mode": "EQUALS",
+    "key": "SHIPMENT_NUMBER",
+    "value": "022120300004"
+  }
+]
+```
+
+2. Continue only when the expected shipment was returned. Read its `client` and `shipment_number`; the numeric
+   shipment `id` is not used by the provider status endpoint.
+3. Build the provider status request. `CLIENT` and `PROVIDER` are required for status processing, while
+   `SHIPMENT_NUMBER` associates the status with the resolved shipment. The values below are examples and must be
+   replaced with codes configured for the customer:
+
+```json
+{
+  "provider_status": "EXPECTED_ARRIVAL",
+  "status_date_and_time": {
+    "date": "2026-11-02",
+    "time": "10:15:00",
+    "zone_offset": "+01:00"
+  },
+  "additional_information": "Estimated arrival updated by customer integration",
+  "unique_provider_message_number": "STATUS-2026-000123",
+  "status_events": [
+    {
+      "type": "STATUS",
+      "date_and_time": {
+        "date": "2026-11-04",
+        "time": "08:30:00",
+        "zone_offset": "+01:00"
+      },
+      "event_date_type": "ESTIMATED"
+    }
+  ],
+  "references": [
+    {
+      "type": "CLIENT",
+      "reference": "001"
+    },
+    {
+      "type": "SHIPMENT_NUMBER",
+      "reference": "022120300004"
+    },
+    {
+      "type": "PROVIDER",
+      "reference": "CUSTOMER_API"
+    }
+  ],
+  "identifiers": []
+}
+```
+
+4. Send the request to `POST /cargosoft/status`. Copy the client and shipment number from the verified lookup
+   result without changing their formatting.
+
+**Result**
+
+A successful request returns `200 OK` without a response body. CargoSoft creates the provider status and associates it
+with the shipment when the supplied references resolve it. Depending on the configured master-data mapping, the
+provider status can also create a customer-defined shipment status or update shipment event data.
+
+**Error handling and retries**
+
+- Stop when the shipment lookup returns no result or more than the expected shipment. Refine the lookup criteria
+  instead of choosing an arbitrary result.
+- A missing `CLIENT` or `PROVIDER` reference, an unknown client, or a provider status that is not configured for the
+  provider causes status processing to fail. Correct the request or master data before retrying.
+- `401` or `403` indicates missing or insufficient API credentials. Do not retry until the credentials or endpoint
+  permissions have been corrected.
+- The endpoint has no automatic retry mechanism. Client, proxy, and deployment timeouts apply to the request.
+- `POST /cargosoft/status` is not idempotent. A blind retry after an ambiguous timeout can create a duplicate
+  provider status. `unique_provider_message_number` is stored for traceability but is not an idempotency key. Because
+  no provider status retrieval endpoint is available, verify the result in CargoSoft before retrying.
+
 ## Retrieve shipment events
 
 **Goal**
@@ -438,7 +553,7 @@ and processed.
 
 | Type | Origin and behavior | API availability |
 |---|---|---|
-| Shipment provider status | Supplied by an external status or service provider; codes depend on the provider | No retrieval endpoint yet |
+| Shipment provider status | Supplied by an external status or service provider; codes depend on the provider | Creation through `POST /cargosoft/status`; no retrieval endpoint yet |
 | Shipment status | Customer-defined and optionally mapped from provider status | No retrieval endpoint yet |
 | Shipment event | CargoSoft-defined and optionally derived from shipment or provider status | Available through `GET /cargosoft/shipment/{id}/events` |
 

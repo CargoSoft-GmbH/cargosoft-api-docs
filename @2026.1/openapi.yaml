@@ -24,6 +24,8 @@ tags:
     endpoints and their function.
 - name: ShipmentMemo
   description: Lookup of order memo lines (eamemo_t) attached to a shipment.
+- name: Provider Status
+  description: Create provider statuses and associate them with CargoSoft shipments.
 paths:
   /cargosoft/basicdata/codeconverter/lookup:
     post:
@@ -1075,6 +1077,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ShipmentMemo"
+      security:
+      - JavaWebToken: []
+  /cargosoft/status:
+    post:
+      tags:
+      - Provider Status
+      summary: Create a provider status.
+      description: Creates a provider status and associates it with a shipment when
+        the CLIENT and SHIPMENT_NUMBER references identify an existing shipment. Provider
+        and status codes depend on the customer-specific CargoSoft master data.
+      operationId: createProviderStatus
+      requestBody:
+        description: "Provider status, event dates, and references used to resolve\
+          \ the customer, provider, and shipment."
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProviderResponseStatus"
+            examples:
+              CreateProviderStatusExample:
+                summary: Create a provider status for an existing shipment.
+                description: "The provider, provider status, client, and shipment\
+                  \ number are customer-specific values."
+                $ref: ./resources/Create_provider_status_example.yaml
+        required: true
+      responses:
+        "200":
+          description: Provider status processed successfully. The response has no
+            content.
       security:
       - JavaWebToken: []
   /auth/token:
@@ -2355,33 +2386,47 @@ components:
     Reference:
       type: object
       properties:
-        client:
+        type:
           type: string
-          description: The CargoSoft client.
-        id:
-          type: integer
-          format: int32
-          description: The unique identifier of this shipment reference.
-        matchcode:
+          enum:
+          - SHIPMENT_NUMBER
+          - REFERENCE_NUMBER
+          - BL_NUMBER
+          - HOUSE_BL_NUMBER
+          - BOOKING_NUMBER
+          - CONTAINER_NUMBER
+          - CONTAINER_ISO_CODE
+          - FLIGHT_NUMBER
+          - CARRIER_CODE
+          - TERMINAL
+          - TERMINAL_FULL_NAME
+          - GOODSID
+          - VESSEL
+          - IMO_NUMBER
+          - VESSEL_CALL_SIGN
+          - CURRENCY
+          - CURRENCY_VALUE
+          - VOYAGE_NUMBER
+          - SEAL_NUMBER
+          - CLIENT
+          - PROVIDER
+          - HANDLING_AGENT
+          - DECLARATION_TYPE
+          - PUBLIC_LINK
+          - RECIPIENT_NAME
+          - VESSEL_FLAG
+          - OLD_VESSEL
+          - NEW_VESSEL
+          - OLD_VESSEL_IMO
+          - NEW_VESSEL_IMO
+          - TRANSPORT_MODE
+          - OFFICE
+          - SCO_ID
+        reference:
           type: string
-          description: The matchcode identifying the type of reference.
-        shipment_number:
-          type: string
-          description: The CargoSoft shipment number of the shipment.
-        counter:
-          type: integer
-          format: int32
-          description: Reference counter
-        value:
-          type: string
-          description: The value of the reference.
-        date_and_time:
-          $ref: "#/components/schemas/DateAndTime"
-          description: An optional date and time associated with the reference.
       required:
-      - id
-      - matchcode
-      - value
+      - reference
+      - type
     RoadCarriageLeg:
       allOf:
       - $ref: "#/components/schemas/CarriageLeg"
@@ -3178,6 +3223,105 @@ components:
             CONTAINS: Contains
             GT: Greater than.
             GE: Greater equals
+    ProviderResponseStatus:
+      type: object
+      description: A provider status with event dates and references used to associate
+        it with CargoSoft data.
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Internal provider response status ID.
+          readOnly: true
+        references:
+          type: array
+          description: References for status processing. CLIENT and PROVIDER are required;
+            SHIPMENT_NUMBER associates the status with a shipment.
+          items:
+            $ref: "#/components/schemas/Reference"
+        identifiers:
+          type: array
+          description: Additional key-value identifiers originating from provider
+            subscriptions. They are optional for direct status creation.
+          items:
+            $ref: "#/components/schemas/SubscriptionStatusAdditional"
+        cs_status:
+          type: string
+          description: Optional CargoSoft status code. The status creation process
+            uses the customer-specific provider status mapping.
+          example: ETA
+        provider_status:
+          type: string
+          description: Provider-specific status code configured in the customer's
+            CargoSoft master data.
+          example: EXPECTED_ARRIVAL
+        status_date_and_time:
+          $ref: "#/components/schemas/DateAndTime"
+          description: Date and time assigned to the provider status message.
+        status_location:
+          $ref: "#/components/schemas/Location"
+          description: Location assigned to the provider status message.
+        additional_information:
+          type: string
+          description: Additional free-text information supplied with the provider
+            status.
+          example: Estimated arrival updated by customer integration
+        unique_provider_message_number:
+          type: string
+          description: Provider message number for traceability. It is not an idempotency
+            key.
+          example: STATUS-2026-000123
+        status_events:
+          type: array
+          description: Provider event dates and locations used by the configured status
+            processing rules.
+          items:
+            $ref: "#/components/schemas/ProviderResponseStatusEvent"
+      required:
+      - provider_status
+      - references
+    ProviderResponseStatusEvent:
+      type: object
+      description: A dated provider event used by CargoSoft status processing.
+      properties:
+        type:
+          type: string
+          description: Role of the event date in the provider status.
+          enum:
+          - FROM
+          - TO
+          - STATUS
+          - EVENT
+          example: STATUS
+        date_and_time:
+          $ref: "#/components/schemas/DateAndTime"
+          description: Date and time of the provider event.
+        event_date_type:
+          type: string
+          description: Whether the event date is actual or estimated.
+          enum:
+          - ACTUAL
+          - ESTIMATED
+          example: ESTIMATED
+        location:
+          $ref: "#/components/schemas/Location"
+          description: Location of the provider event.
+      required:
+      - date_and_time
+      - type
+    SubscriptionStatusAdditional:
+      type: object
+      description: An additional provider-specific identifier attached to a status
+        response.
+      properties:
+        key:
+          type: string
+          description: Provider-specific identifier key.
+          example: CONTAINER
+        value:
+          type: string
+          description: Provider-specific identifier value.
+          example: CSQU3054383
     Jwt:
       type: object
       properties:
