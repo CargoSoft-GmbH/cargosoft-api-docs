@@ -11,18 +11,7 @@ This page documents all business-relevant changes to our API.
 |----------------|----------------------------|--------------------------------------------------------------------------------------------------------|------------------------------------------------------------------|---|
 | **Added**      | `POST` /cargosoft/shipment | Added new shipment create endpoint.                                                                    | No changes to existing integrations are required.                | 2026.1 |
 | **Added**      | Use cases                  | Added new use case to create a shipment - [see](#section/use-cases/create-a-shipment).                  | No changes to existing integrations are required.                | 2026.1 |
-| **Added**      | Use cases                  | Added a use case for attaching an E-File document to a shipment - [see](#section/use-cases/attach-an-e-file-document-to-a-shipment). | No changes to existing integrations are required. | 2026.1 |
-| **Added**      | [`POST /cargosoft/efile`](#operation/createEFileDocument) | Create an E-File document together with references and roles. | No changes to existing integrations are required. | 2026.1 |
-| **Added**      | [`GET /cargosoft/efile/{id}`](#operation/retrieveEFileDocument) | Retrieve an E-File document by its ID. | No changes to existing integrations are required. | 2026.1 |
-| **Added**      | [`DELETE /cargosoft/efile/{id}`](#operation/deleteEFileDocument) | Delete an E-File document by its ID. | No changes to existing integrations are required. | 2026.1 |
-| **Added**      | [`POST /cargosoft/efile/lookup`](#operation/lookupEFileDocuments) | Look up E-File documents by E-File identifiers. | No changes to existing integrations are required. | 2026.1 |
-| **Added**      | [`POST /cargosoft/efile/{id}/reference`](#operation/addEFileReference) | Add a reference to an E-File document. | No changes to existing integrations are required. | 2026.1 |
-| **Added**      | [`GET /cargosoft/efile/{id}/reference`](#operation/retrieveEFileReferences) | Retrieve the references of an E-File document. | No changes to existing integrations are required. | 2026.1 |
-| **Added**      | [`DELETE /cargosoft/efile/{id}/reference`](#operation/removeEFileReference) | Remove a reference from an E-File document. | No changes to existing integrations are required. | 2026.1 |
-| **Added**      | [`POST /cargosoft/efile/{id}/role`](#operation/addEFileRole) | Add an authorization role to an E-File document. | No changes to existing integrations are required. | 2026.1 |
-| **Added**      | [`GET /cargosoft/efile/{id}/role`](#operation/retrieveEFileRoles) | Retrieve the authorization roles of an E-File document. | No changes to existing integrations are required. | 2026.1 |
-| **Added**      | [`DELETE /cargosoft/efile/{id}/role`](#operation/removeEFileRole) | Remove an authorization role from an E-File document. | No changes to existing integrations are required. | 2026.1 |
-| **Fixed**      | [`POST /cargosoft/efile/lookup`](#operation/lookupEFileDocuments) | Corrected the documented lookup keys to the E-File identifiers `REFERENCE`, `SHIPMENT_ID`, and `CLIENT`. | Runtime behavior is unchanged. | 2026.1 |
+| **Added**      | E-File                     | Added support for E-File - [see](#section/use-cases/attach-an-e-file-document-to-a-shipment).           | No changes to existing integrations are required.                | 2026.1 |
 | **Added**      | Basic data                 | Added new edi code conversion endpoints.                                                               | No changes to existing integrations are required.                | 2026.1 |
 | **Deprecated** | ShipmentEventQualifier     | The shipment event qualifer `TRANSSHIPMENT` is now deprecated and will be removed in a future version. | Use the `TRANSSHIPMENT_ARRIVAL` shipment event qualifer instead. | 2026.1 |
 
@@ -192,149 +181,133 @@ have in mind that the test environment will be reset every night!
 
 # Use cases
 
-## Retrieve a shipment
+The following use cases describe common integration workflows. Every request requires a JWT in the
+`Authorization: Bearer <token>` header. For details about retrieving and using a token, see
+[Authorization](#CHAPTER_AUTHORIZATION). The sequence diagrams omit token retrieval to keep the workflows focused.
 
-To retrieve a shipment, the [lookup](#operation/lookup) endpoint of the shipment functional group is one of
-the common possibilities that should be used. The following figure shows the use case to look up a shipment. To keep the
-figure simple, the authorization process is referred.
-
-![RetrieveShipment][SeqRetrieveShipment]
-
-[SeqRetrieveShipment]: ./resources/Seq_retrieve_shipment.svg "Use case to retrieve a shipment"
-
-1. To access the lookup endpoint a JWT is needed. For more details how to retrieve a JWT [see](#CHAPTER_AUTHORIZATION).
-2. When a JWT is present, the shipment lookup endpoint can be called. Shipment identifier have to be sent in the request
-   body to reduce the response result. For a complete list of shipment identifier
-   see [here](#operation/lookup).
-
-## Retrieve shipment status
-
-CargoSoft has different pools in which status information are stored. These are described in detail in the next
-subsections. However, in order to understand the differences
-exactly, the following graphic tries to clarify how the status message flow works.
-
-![ShipmentStatus][useCaseShipmentStatus]
-
-[useCaseShipmentStatus]: ./resources/Use_case_shipment_status.svg "Use case to retrieve shipment events"
-
-### Shipment provider status
-
-These status messages come from external status providers and service providers who supply CargoSoft with status
-information.
-They cannot be entered or changed by CargoSoft employees by hand. A shipment provider status always represents exactly
-one state - planned / estimated or the actual date and time (depending on the name of the status). The codes of the
-statuses are defined by the providers and are variable depending on the provider.
-
-> Please note: There is no endpoint to retrieve provider status from the CargoSoft API yet. This endpoint will be
-> implemented in a later release.
-
-### Shipment status
-
-CargoSoft customers can define this status code themselves. In addition, the shipment provider statuses can be mapped
-into a shipment status if the CargoSoft customer configured his basic data accordingly. Here, for example, it can be
-defined that the status
-ABC of provider XYZ has to be processed as shipment status ETA. In this case ETA would be a freely defined code for the
-status. Therefore, there is no list of valid codes.
-
-With this status, there are also two forms of date information per data record. Once a planned and an actual one. This
-means that a status ETA, although obviously planned, can contain an actual date. However, this is due to the recording
-of the customer's data.
-
-The CargoSoft customer can add this status information manually, but an existing record can no longer be changed.
-
-> Please note: There is no endpoint to retrieve CargoSoft status from the CargoSoft API yet. This endpoint will be
-> implemented in a later release.
-
-### Shipment events
-
-Shipment events are status events that are defined by CargoSoft. These events are fixed and can always be called up -
-unless there is no data available for the shipment. For a complete list of shipment event codes
-see [here](#operation/retrieveEvents).
-A shipment event can be created automatically from a shipment or provider status if this is set in the CargoSoft master
-data. A status always represents exactly one instance - planned or actual and the information can be changed at any time
-by hand, but also by background processes.
-
-![RetrieveShipmentEvents][SeqRetrieveShipmentEvents]
-
-[SeqRetrieveShipmentEvents]: ./resources/Seq_retrieve_shipment_event.svg "Use case to retrieve shipment events"
+| Goal | Primary endpoint | Result |
+|---|---|---|
+| Create a shipment | `POST /cargosoft/shipment` | A new shipment with its unique ID and CargoSoft shipment number |
+| Retrieve a shipment | `POST /cargosoft/shipment/lookup` | Matching shipments and their IDs |
+| Attach an E-File document | `POST /cargosoft/efile` | A stored document linked to an existing shipment |
+| Retrieve shipment events | `GET /cargosoft/shipment/{id}/events` | The available CargoSoft events for a shipment |
 
 ## Create a shipment
 
 <p id='CHAPTER_SHIPMENT'></p>
 
-To create a new shipment, the [create](#operation/createShipment) endpoint of the shipment functional group has to be
-used. The following figure shows the use case to create a shipment. To keep the figure simple, the authorization process is referred.
+**Goal**
+
+Create a shipment together with any supplied nested data, such as goods, containers, addon field values, or memo lines.
+
+**Endpoint**
+
+Use [`POST /cargosoft/shipment`](#operation/createShipment).
+
+**Prerequisites**
+
+- The authenticated API username must match the matchcode of an EDI partner.
+- The shipment number definition, main department, and sub department must be resolvable from the
+  [EDI partner settings](#CHAPTER_EDIPARTNER_SETTINGS) or the request body.
+
+**Sequence**
 
 ![CreateShipment][SeqCreateShipment]
 
 [SeqCreateShipment]: ./resources/Seq_create_shipment.svg "Use case to create a shipment"
 
-1. To access the create endpoint a JWT is needed. For more details how to retrieve a JWT [see](#CHAPTER_AUTHORIZATION).
-2. Based on the authenticated API user, the CargoSoft API determines the EDI partner to associate with the new
+**Workflow**
+
+1. Based on the authenticated API user, the CargoSoft API determines the EDI partner to associate with the new
    shipment: the EDI partner's matchcode has to be identical to the API username. If no EDI partner exists for
    the API user, the request is rejected and no shipment is created.
-3. The determined EDI partner's settings are used, where configured, to fill in values that are otherwise
-   required to generate the shipment number - see [EDI-Partner](#CHAPTER_EDIPARTNER_SETTINGS)
-   below for the exact keys and their fallback rules.
-4. The shipment is created together with any nested data supplied in the same request body - goods, containers,
+2. The determined EDI partner's settings are used, where configured, to fill in values that are required to generate
+   the shipment number. See [EDI partner settings](#CHAPTER_EDIPARTNER_SETTINGS) for the exact keys and fallback rules.
+3. The shipment is created together with any nested data supplied in the same request body - goods, containers,
    addon field values, order memo lines, and so on. A memo text longer than the maximum line length is
-   automatically wrapped across several consecutive memo lines - see the [lookup](#operation/lookup) endpoint
-   of the shipment memo functional group to retrieve them independently afterwards. If any of that nested data
-   fails validation (for example an addon field value referencing a matchcode that doesn't exist in the master
-   data), the whole shipment creation is rejected and nothing is created.
-5. Once the shipment has been created, the shipment is returned as response to the request. 
-   The shipment response contains the unique shipment ID and the CargoSoft shipment number. 
+   automatically wrapped across several consecutive memo lines. Use `POST /cargosoft/shipment/memo/lookup` to
+   retrieve memo lines independently afterwards.
+4. If the request and all nested data pass validation, the CargoSoft API stores and returns the shipment.
 
+**Result**
 
-### EDI-Partner settings
+The response contains the created shipment, including its unique shipment ID and CargoSoft shipment number.
 
-<p id='CHAPTER_EDIPARTNER_SETTINGS'></p>
-Generating a shipment number requires three pieces of information: the shipment number definition (posdef),
-the main department, and the sub department. Each of them can be configured individually as a setting on the
-EDI partner determined for the request (see step 2 above). A setting configured on the EDI partner always
-takes precedence; an empty or blank setting value is treated the same as if the setting wasn't configured at
-all. Each of the three keys is resolved independently of the other two - a missing/invalid value for one key
-never prevents the fallback for a different key from being used. Any other, unrelated qualifier configured on
-the EDI partner is ignored.
+**Error handling**
 
-| Key                            | Meaning                                                       | Fallback if not configured (or blank) on the EDI partner                                                                                                  |
-|----------------------------------|---------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `SHIPMENT_NUMBER_DEFINITION_VERSION`    | The shipment number definition version to use. | The `shipment_number_definition_version` supplied in the request body, if present; otherwise the CargoSoft client's own default. |
-| `MAINDEPARTMENT`                | The main department to use for shipment numbering.            | The `maindepartment` supplied in the request body. If neither is present, the request is rejected.                                                        |
-| `SUBDEPARTMENT`                 | The sub department to use for shipment numbering.             | The `subdepartment` supplied in the request body. If neither is present, the request is rejected.                                                         |
-| `ADDRESS_FORMAT`                 | The address format used to format the shipment addresses.     | The CargoSoft client's own default in the general company parameters.                                                                                     |
+- If no EDI partner matches the API username, the request is rejected and no shipment is created.
+- If required shipment numbering values cannot be resolved, the request is rejected.
+- If nested data fails validation, the complete shipment creation is rejected and nothing is created.
 
-> Please note: if a request doesn't need to rely on the EDI partner's settings at all - for example while
-> testing - `shipment_number_definition_version`, `maindepartment` and `subdepartment` can simply be supplied
-> directly in the request body instead.
+## Retrieve a shipment
+
+**Goal**
+
+Find an existing shipment from business identifiers and obtain the unique shipment ID used by subsequent endpoints.
+
+**Endpoint**
+
+Use `POST /cargosoft/shipment/lookup`.
+
+**Prerequisites**
+
+- Select identifiers that narrow the result to the intended shipment.
+- Use pagination when a lookup can return more results than fit on one page.
+
+**Sequence**
+
+![RetrieveShipment][SeqRetrieveShipment]
+
+[SeqRetrieveShipment]: ./resources/Seq_retrieve_shipment.svg "Use case to retrieve a shipment"
+
+**Workflow**
+
+1. Build the request body from supported shipment identifiers, such as client and shipment number.
+2. Call `POST /cargosoft/shipment/lookup` with the identifiers and, if necessary, pagination parameters.
+3. Verify that the expected shipment was returned and extract its unique `id`.
+4. If full shipment details are required, call `GET /cargosoft/shipment/{id}` with the extracted ID.
+
+**Result**
+
+The lookup returns zero or more base shipments. Each returned shipment contains the unique ID required for related data,
+such as shipment events or E-File lookups.
+
+**Error handling**
+
+- Refine the identifiers when the lookup returns no result or more shipments than expected.
+- Do not select an arbitrary result when the criteria are not unique.
 
 ## Attach an E-File document to a shipment
 
 <p id='CHAPTER_EFILE_SHIPMENT'></p>
 
-An E-File document can be created and linked to an existing shipment in one request. The shipment must first be
-resolved through `POST /cargosoft/shipment/lookup`, because the E-File shipment reference is built
-from the shipment number and client returned by that lookup. The document is then uploaded with the
-[E-File create endpoint](#operation/createEFileDocument).
+**Goal**
 
-![AttachEFileToShipment][SeqAttachEFileToShipment]
+Create an E-File document and link it to an existing shipment in the same request.
 
-[SeqAttachEFileToShipment]: ./resources/Seq_attach_efile_to_shipment.svg "Use case to attach an E-File document to a shipment"
+**Endpoints**
 
-### Prerequisites
+- Use `POST /cargosoft/shipment/lookup` to resolve the shipment number, client, and unique shipment ID.
+- Use [`POST /cargosoft/efile`](#operation/createEFileDocument) to create and link the document.
+- Use `POST /cargosoft/efile/{id}/reference` only when linking an already existing document later.
 
-- The API user must be allowed to call `POST /cargosoft/shipment/lookup` and `POST /cargosoft/efile`. Adding a
-  reference to an already existing document also requires access to `POST /cargosoft/efile/{id}/reference`.
+**Prerequisites**
+
+- The API user must be allowed to call the required shipment and E-File endpoints.
 - E-File must be enabled and configured for the shipment's CargoSoft client.
 - The document content must be Base64 encoded without a data-URI prefix.
 - The document category must exist in the customer's CargoSoft basic data. It is mandatory when the configured
   E-File system uses D3 mode.
 
-### Workflow
+**Sequence**
 
-1. Retrieve a JWT with the [authorization endpoint](#operation/retrieveAuthToken). Send the token as
-   `Authorization: Bearer <token>` with every subsequent request.
-2. Look up the shipment with criteria that identify exactly one shipment. A CargoSoft shipment number is unique
+![AttachEFileToShipment][SeqAttachEFileToShipment]
+
+[SeqAttachEFileToShipment]: ./resources/Seq_attach_efile_to_shipment.svg "Use case to attach an E-File document to a shipment"
+
+**Workflow**
+
+1. Look up the shipment with criteria that identify exactly one shipment. A CargoSoft shipment number is unique
    only in combination with its client, so both identifiers should be supplied:
 
 ```json
@@ -352,10 +325,10 @@ from the shipment number and client returned by that lookup. The document is the
 ]
 ```
 
-3. Process the lookup response before uploading. Continue only when the expected shipment was returned, and read
+2. Process the lookup response before uploading. Continue only when the expected shipment was returned, and read
    its `id`, `shipment_number`, and `client`. The numeric shipment `id` can later be used to
    [look up E-File documents](#operation/lookupEFileDocuments), but it is not the value of the `CSFILE` reference.
-4. Build the shipment reference and include it in the upload request:
+3. Build the shipment reference and include it in the upload request:
 
 | Situation | Endpoint | `reference_type` | `reference_value` |
 |---|---|---|---|
@@ -364,7 +337,7 @@ from the shipment number and client returned by that lookup. The document is the
 
 For the lookup response above, the reference value is `022120300004#001`.
 
-5. Upload the document. The following example omits optional roles; when roles are supplied, use values configured
+4. Upload the document. The following example omits optional roles; when roles are supplied, use values configured
    for the customer's E-File system. `document_category` is also customer-specific.
 
 ```json
@@ -384,10 +357,14 @@ For the lookup response above, the reference value is `022120300004#001`.
 }
 ```
 
-6. A successful response contains the stored E-File document and its `id`. Keep this ID when references or roles
-   need to be managed later.
+5. Keep the returned E-File document ID when references or roles need to be managed later.
 
-### Error handling and retries
+**Result**
+
+The response contains the stored E-File document and its unique `id`. The included `CSFILE` reference links the
+document to the resolved shipment.
+
+**Error handling and retries**
 
 - A shipment lookup that returns no result or more than the expected shipment must be resolved before the upload.
   Refine the lookup identifiers instead of choosing an arbitrary result.
@@ -403,6 +380,107 @@ For the lookup response above, the reference value is `022120300004#001`.
   [E-File lookup](#operation/lookupEFileDocuments) with the shipment `id` as `SHIPMENT_ID` and verify whether the
   document was stored. Retry only when it is absent. If a `503` response contains `Retry-After`, wait for the stated
   interval before retrying.
+
+## Retrieve shipment events
+
+**Goal**
+
+Retrieve the CargoSoft-defined events currently available for an existing shipment.
+
+**Endpoint**
+
+Use [`GET /cargosoft/shipment/{id}/events`](#operation/retrieveEvents).
+
+**Prerequisites**
+
+The unique shipment ID must be known. If only business identifiers are available, first follow the
+[Retrieve a shipment](#section/use-cases/retrieve-a-shipment) workflow.
+
+**Sequence**
+
+![RetrieveShipmentEvents][SeqRetrieveShipmentEvents]
+
+[SeqRetrieveShipmentEvents]: ./resources/Seq_retrieve_shipment_event.svg "Use case to retrieve shipment events"
+
+**Workflow**
+
+1. Resolve the shipment with `POST /cargosoft/shipment/lookup` when its unique ID is not yet known.
+2. Extract the shipment `id` from the lookup result.
+3. Call `GET /cargosoft/shipment/{id}/events` with that ID.
+
+**Result**
+
+The response contains the available CargoSoft shipment events. An event represents either a planned or an actual
+instance. For the differences between provider status, customer-defined shipment status, and shipment events, see
+[Shipment status model](#section/concepts-and-configuration/shipment-status-model).
+
+**Error handling**
+
+- The response may not contain every possible event because some events may not have been recorded for the shipment yet.
+- Verify the shipment ID when no events are returned unexpectedly.
+
+# Concepts and configuration
+
+This section contains background information and configuration rules used by the workflows above. It does not describe
+additional API workflows.
+
+## Shipment status model
+
+CargoSoft stores status information in different pools. The following diagram shows how status messages can be mapped
+and processed.
+
+![ShipmentStatus][useCaseShipmentStatus]
+
+[useCaseShipmentStatus]: ./resources/Use_case_shipment_status.svg "CargoSoft shipment status model"
+
+| Type | Origin and behavior | API availability |
+|---|---|---|
+| Shipment provider status | Supplied by an external status or service provider; codes depend on the provider | No retrieval endpoint yet |
+| Shipment status | Customer-defined and optionally mapped from provider status | No retrieval endpoint yet |
+| Shipment event | CargoSoft-defined and optionally derived from shipment or provider status | Available through `GET /cargosoft/shipment/{id}/events` |
+
+**Shipment provider status**
+
+These status messages come from external status providers and service providers. CargoSoft employees cannot enter or
+change them manually. A provider status represents exactly one state, such as a planned, estimated, or actual date and
+time. Its code is defined by the provider and can therefore vary between providers.
+
+**Shipment status**
+
+CargoSoft customers define these status codes themselves. Provider statuses can be mapped to shipment statuses through
+the customer's basic data. For example, provider status `ABC` can be mapped to the customer-defined shipment status
+`ETA`; consequently, there is no universal list of valid shipment status codes.
+
+A shipment status record can contain both planned and actual date information. Customers can add status information
+manually, but an existing record can no longer be changed.
+
+**Shipment events**
+
+Shipment events are fixed status events defined by CargoSoft. They can be retrieved when data is available for the
+shipment. An event can be created automatically from a shipment or provider status when the CargoSoft master data is
+configured accordingly. It represents either a planned or an actual instance and can be changed manually or by
+background processes. The complete list of event codes is documented by the
+[`GET /cargosoft/shipment/{id}/events`](#operation/retrieveEvents) endpoint.
+
+<p id='CHAPTER_EDIPARTNER_SETTINGS'></p>
+
+## EDI partner settings
+
+Generating a shipment number requires three pieces of information: the shipment number definition (posdef), the main
+department, and the sub department. Each value can be configured individually on the EDI partner determined from the
+authenticated API user. A configured EDI partner value takes precedence; an empty or blank value is treated as not
+configured. Each key is resolved independently, and unrelated qualifiers on the EDI partner are ignored.
+
+| Key | Meaning | Fallback if not configured or blank on the EDI partner |
+|---|---|---|
+| `SHIPMENT_NUMBER_DEFINITION_VERSION` | Shipment number definition version to use | `shipment_number_definition_version` from the request body, if present; otherwise the CargoSoft client's default |
+| `MAINDEPARTMENT` | Main department used for shipment numbering | `maindepartment` from the request body; if neither value is present, the request is rejected |
+| `SUBDEPARTMENT` | Sub department used for shipment numbering | `subdepartment` from the request body; if neither value is present, the request is rejected |
+| `ADDRESS_FORMAT` | Address format used for shipment addresses | The CargoSoft client's default from the general company parameters |
+
+> Please note: If a request does not need to rely on the EDI partner's settings, for example during testing,
+> `shipment_number_definition_version`, `maindepartment`, and `subdepartment` can be supplied directly in the request
+> body.
 
 ## EDI code conversion
 
