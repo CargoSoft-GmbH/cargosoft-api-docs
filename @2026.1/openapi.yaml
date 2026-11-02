@@ -198,8 +198,10 @@ paths:
       tags:
       - E-File
       summary: Create an E-File document.
-      description: Stores a base64 encoded document in E-File and links it to the
-        supplied references and roles.
+      description: |-
+        > **Development notice:** This endpoint is still under development and may change.
+
+        Stores a base64 encoded document in E-File and links it to the supplied references and roles.
       operationId: createEFileDocument
       requestBody:
         content:
@@ -1084,9 +1086,10 @@ paths:
       tags:
       - Provider Status
       summary: Create a provider status.
-      description: Creates a provider status and associates it with a shipment when
-        the CLIENT and SHIPMENT_NUMBER references identify an existing shipment. Provider
-        and status codes depend on the customer-specific CargoSoft master data.
+      description: |-
+        > **Development notice:** This endpoint is still under development and may change.
+
+        Creates a provider status and associates it with a shipment when the CLIENT and SHIPMENT_NUMBER references identify an existing shipment. Provider and status codes depend on the customer-specific CargoSoft master data.
       operationId: createProviderStatus
       requestBody:
         description: "Provider status, event dates, and references used to resolve\
