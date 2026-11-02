@@ -10,9 +10,20 @@ This page documents all business-relevant changes to our API.
 | Category       | Endpoint / Area            | Change                                                                                                 | Impact and required action                                       | Version |
 |----------------|----------------------------|--------------------------------------------------------------------------------------------------------|------------------------------------------------------------------|---|
 | **Added**      | `POST` /cargosoft/shipment | Added new shipment create endpoint.                                                                    | No changes to existing integrations are required.                | 2026.1 |
-| **Added**      | Use cases                  | Added new use case to create a shipment - [see](#section/use-cases/create-a-shipment)                          | No changes to existing integrations are required.                | 2026.1 |
+| **Added**      | Use cases                  | Added new use case to create a shipment - [see](#section/use-cases/create-a-shipment).                  | No changes to existing integrations are required.                | 2026.1 |
+| **Added**      | Use cases                  | Added a use case for attaching an E-File document to a shipment - [see](#section/use-cases/attach-an-e-file-document-to-a-shipment). | No changes to existing integrations are required. | 2026.1 |
+| **Added**      | [`POST /cargosoft/efile`](#operation/createEFileDocument) | Create an E-File document together with references and roles. | No changes to existing integrations are required. | 2026.1 |
+| **Added**      | [`GET /cargosoft/efile/{id}`](#operation/retrieveEFileDocument) | Retrieve an E-File document by its ID. | No changes to existing integrations are required. | 2026.1 |
+| **Added**      | [`DELETE /cargosoft/efile/{id}`](#operation/deleteEFileDocument) | Delete an E-File document by its ID. | No changes to existing integrations are required. | 2026.1 |
+| **Added**      | [`POST /cargosoft/efile/lookup`](#operation/lookupEFileDocuments) | Look up E-File documents by E-File identifiers. | No changes to existing integrations are required. | 2026.1 |
+| **Added**      | [`POST /cargosoft/efile/{id}/reference`](#operation/addEFileReference) | Add a reference to an E-File document. | No changes to existing integrations are required. | 2026.1 |
+| **Added**      | [`GET /cargosoft/efile/{id}/reference`](#operation/retrieveEFileReferences) | Retrieve the references of an E-File document. | No changes to existing integrations are required. | 2026.1 |
+| **Added**      | [`DELETE /cargosoft/efile/{id}/reference`](#operation/removeEFileReference) | Remove a reference from an E-File document. | No changes to existing integrations are required. | 2026.1 |
+| **Added**      | [`POST /cargosoft/efile/{id}/role`](#operation/addEFileRole) | Add an authorization role to an E-File document. | No changes to existing integrations are required. | 2026.1 |
+| **Added**      | [`GET /cargosoft/efile/{id}/role`](#operation/retrieveEFileRoles) | Retrieve the authorization roles of an E-File document. | No changes to existing integrations are required. | 2026.1 |
+| **Added**      | [`DELETE /cargosoft/efile/{id}/role`](#operation/removeEFileRole) | Remove an authorization role from an E-File document. | No changes to existing integrations are required. | 2026.1 |
+| **Fixed**      | [`POST /cargosoft/efile/lookup`](#operation/lookupEFileDocuments) | Corrected the documented lookup keys to the E-File identifiers `REFERENCE`, `SHIPMENT_ID`, and `CLIENT`. | Runtime behavior is unchanged. | 2026.1 |
 | **Added**      | Basic data                 | Added new edi code conversion endpoints.                                                               | No changes to existing integrations are required.                | 2026.1 |
-| **Added**      | E-File                     | Added new E-File endpoints.                                                                            | No changes to existing integrations are required.                | 2026.1 |
 | **Deprecated** | ShipmentEventQualifier     | The shipment event qualifer `TRANSSHIPMENT` is now deprecated and will be removed in a future version. | Use the `TRANSSHIPMENT_ARRIVAL` shipment event qualifer instead. | 2026.1 |
 
 
@@ -296,6 +307,102 @@ the EDI partner is ignored.
 > Please note: if a request doesn't need to rely on the EDI partner's settings at all - for example while
 > testing - `shipment_number_definition_version`, `maindepartment` and `subdepartment` can simply be supplied
 > directly in the request body instead.
+
+## Attach an E-File document to a shipment
+
+<p id='CHAPTER_EFILE_SHIPMENT'></p>
+
+An E-File document can be created and linked to an existing shipment in one request. The shipment must first be
+resolved through `POST /cargosoft/shipment/lookup`, because the E-File shipment reference is built
+from the shipment number and client returned by that lookup. The document is then uploaded with the
+[E-File create endpoint](#operation/createEFileDocument).
+
+![AttachEFileToShipment][SeqAttachEFileToShipment]
+
+[SeqAttachEFileToShipment]: ./resources/Seq_attach_efile_to_shipment.svg "Use case to attach an E-File document to a shipment"
+
+### Prerequisites
+
+- The API user must be allowed to call `POST /cargosoft/shipment/lookup` and `POST /cargosoft/efile`. Adding a
+  reference to an already existing document also requires access to `POST /cargosoft/efile/{id}/reference`.
+- E-File must be enabled and configured for the shipment's CargoSoft client.
+- The document content must be Base64 encoded without a data-URI prefix.
+- The document category must exist in the customer's CargoSoft basic data. It is mandatory when the configured
+  E-File system uses D3 mode.
+
+### Workflow
+
+1. Retrieve a JWT with the [authorization endpoint](#operation/retrieveAuthToken). Send the token as
+   `Authorization: Bearer <token>` with every subsequent request.
+2. Look up the shipment with criteria that identify exactly one shipment. A CargoSoft shipment number is unique
+   only in combination with its client, so both identifiers should be supplied:
+
+```json
+[
+  {
+    "match_mode": "EQUALS",
+    "key": "CLIENT",
+    "value": "001"
+  },
+  {
+    "match_mode": "EQUALS",
+    "key": "SHIPMENT_NUMBER",
+    "value": "022120300004"
+  }
+]
+```
+
+3. Process the lookup response before uploading. Continue only when the expected shipment was returned, and read
+   its `id`, `shipment_number`, and `client`. The numeric shipment `id` can later be used to
+   [look up E-File documents](#operation/lookupEFileDocuments), but it is not the value of the `CSFILE` reference.
+4. Build the shipment reference and include it in the upload request:
+
+| Situation | Endpoint | `reference_type` | `reference_value` |
+|---|---|---|---|
+| Create and link a new document | `POST /cargosoft/efile` | `CSFILE` | `<shipment_number>#<client>` |
+| Link an existing document later | `POST /cargosoft/efile/{id}/reference` | `CSFILE` | `<shipment_number>#<client>` |
+
+For the lookup response above, the reference value is `022120300004#001`.
+
+5. Upload the document. The following example omits optional roles; when roles are supplied, use values configured
+   for the customer's E-File system. `document_category` is also customer-specific.
+
+```json
+{
+  "client": "001",
+  "document_category": 1601,
+  "document_name": "shipping-instructions.pdf",
+  "description": "Shipping instructions received from the customer",
+  "document_date": "2026-11-02T10:15:00",
+  "bytes": "JVBERi0xLjQKJcTl8uXr...",
+  "references": [
+    {
+      "reference_type": "CSFILE",
+      "reference_value": "022120300004#001"
+    }
+  ]
+}
+```
+
+6. A successful response contains the stored E-File document and its `id`. Keep this ID when references or roles
+   need to be managed later.
+
+### Error handling and retries
+
+- A shipment lookup that returns no result or more than the expected shipment must be resolved before the upload.
+  Refine the lookup identifiers instead of choosing an arbitrary result.
+- `401` or `403` indicates missing or insufficient API credentials. Do not retry until the credentials or endpoint
+  permissions have been corrected.
+- Invalid Base64 data, an unknown client, a missing mandatory document category, or an unavailable E-File system
+  causes the upload to fail. The error response must be handled before another upload is attempted.
+- The server-side connection from the CargoSoft API to the configured E-File system has a default timeout of
+  30 seconds; the deployment can override this value. API consumers should configure their HTTP timeout with enough
+  headroom for that downstream call.
+- The CargoSoft API does not automatically retry a failed upload. `POST /cargosoft/efile` is not idempotent, so a
+  blind retry after a client or downstream timeout can create a duplicate. First call the
+  [E-File lookup](#operation/lookupEFileDocuments) with the shipment `id` as `SHIPMENT_ID` and verify whether the
+  document was stored. Retry only when it is absent. If a `503` response contains `Retry-After`, wait for the stated
+  interval before retrying.
 
 ## EDI code conversion
 

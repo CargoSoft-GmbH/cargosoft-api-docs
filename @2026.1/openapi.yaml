@@ -198,7 +198,7 @@ paths:
       summary: Create an E-File document.
       description: Stores a base64 encoded document in E-File and links it to the
         supplied references and roles.
-      operationId: create
+      operationId: createEFileDocument
       requestBody:
         content:
           application/json:
@@ -219,7 +219,7 @@ paths:
       - E-File
       summary: Retrieve references from an E-File document.
       description: Retrieves all references linked to an E-File document.
-      operationId: retrieveReferencesFromDocument
+      operationId: retrieveEFileReferences
       parameters:
       - name: id
         in: path
@@ -245,7 +245,7 @@ paths:
       summary: Add a reference to an E-File document.
       description: "Adds a reference, such as a shipment or address reference, to\
         \ an existing E-File document."
-      operationId: createReferenceForDocument
+      operationId: addEFileReference
       parameters:
       - name: id
         in: path
@@ -269,7 +269,7 @@ paths:
       - E-File
       summary: Remove a reference from an E-File document.
       description: Removes a reference from an existing E-File document.
-      operationId: deleteReferenceFromDocument
+      operationId: removeEFileReference
       parameters:
       - name: id
         in: path
@@ -294,7 +294,7 @@ paths:
       - E-File
       summary: Retrieve roles from an E-File document.
       description: Retrieves all authorization roles linked to an E-File document.
-      operationId: retrieveRolesFromDocument
+      operationId: retrieveEFileRoles
       parameters:
       - name: id
         in: path
@@ -319,7 +319,7 @@ paths:
       - E-File
       summary: Add a role to an E-File document.
       description: Adds an authorization role to an existing E-File document.
-      operationId: createRoleForDocument
+      operationId: addEFileRole
       parameters:
       - name: id
         in: path
@@ -343,7 +343,7 @@ paths:
       - E-File
       summary: Remove a role from an E-File document.
       description: Removes an authorization role from an existing E-File document.
-      operationId: deleteRoleFromDocument
+      operationId: removeEFileRole
       parameters:
       - name: id
         in: path
@@ -368,7 +368,7 @@ paths:
       - E-File
       summary: Retrieve an E-File document.
       description: Retrieves a single E-File document by its document ID.
-      operationId: retrieveById_1
+      operationId: retrieveEFileDocument
       parameters:
       - name: id
         in: path
@@ -396,7 +396,7 @@ paths:
       - E-File
       summary: Delete an E-File document.
       description: Deletes an E-File document by its document ID.
-      operationId: delete
+      operationId: deleteEFileDocument
       parameters:
       - name: id
         in: path
@@ -421,7 +421,7 @@ paths:
       summary: Lookup E-File documents.
       description: Looks up electronic documents such as PDF files by the supplied
         lookup identifiers.
-      operationId: lookup_1
+      operationId: lookupEFileDocuments
       parameters:
       - name: page_no
         in: query
@@ -565,7 +565,7 @@ paths:
         \ search criteria you will receive zero up to n shipments. This endpoint only\
         \ returns the base shipment. If you need the full shipment details, use the\
         \ shipment id to retrieve them separately."
-      operationId: lookup_2
+      operationId: lookup_1
       parameters:
       - name: page_no
         in: query
@@ -740,7 +740,7 @@ paths:
       - Shipment
       summary: Retrieve shipment
       description: Retrieve a specific shipment with the CargoSoft database id.
-      operationId: retrieveById_2
+      operationId: retrieveById_1
       parameters:
       - name: id
         in: path
@@ -835,7 +835,7 @@ paths:
       - Shipment
       summary: Create a shipment event
       description: 'Create a shipment event of the given event type. '
-      operationId: create_1
+      operationId: create
       parameters:
       - name: shipmentId
         in: path
@@ -930,7 +930,7 @@ paths:
       summary: Lookup shipment memo lines
       description: "Looks up order memo lines (eamemo_t) attached to a shipment, typically\
         \ by client and shipment_number together (the shipment they were created for)."
-      operationId: lookup_3
+      operationId: lookup_2
       parameters:
       - name: page_no
         in: query
@@ -1054,7 +1054,7 @@ paths:
       summary: Retrieve shipment memo line
       description: Retrieve a specific shipment memo line record with the CargoSoft
         database id.
-      operationId: retrieveById_3
+      operationId: retrieveById_2
       parameters:
       - name: id
         in: path
@@ -1380,7 +1380,8 @@ components:
           - ADRFILE
         reference_value:
           type: string
-          description: The reference value.
+          description: "The reference value. For a CSFILE shipment reference, use\
+            \ `<shipment_number>#<client>`, for example `022120300004#001`."
     EFileRole:
       type: object
       properties:
@@ -1390,8 +1391,6 @@ components:
       type: object
       anyOf:
       - $ref: "#/components/schemas/EqualsIdentifier"
-      - $ref: "#/components/schemas/GreaterThanIdentifier"
-      - $ref: "#/components/schemas/GreaterEqualIdentifier"
       properties:
         key:
           type: string
