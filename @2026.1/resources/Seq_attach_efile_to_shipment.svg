@@ -1,101 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="820" viewBox="0 0 1200 820" role="img" aria-labelledby="title description">
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="930" viewBox="0 0 1000 930" role="img"
+     aria-labelledby="title description">
   <title id="title">Attach an E-File document to a shipment</title>
-  <desc id="description">Sequence diagram showing authentication, shipment lookup, reference construction, and E-File upload.</desc>
+  <desc id="description">Sequence diagram showing shipment lookup, construction of the CSFILE reference, and creation of an E-File document.</desc>
+
   <defs>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
-      <path d="M0,0 L0,6 L9,3 z" fill="#1f5f99"/>
+    <marker id="arrow" markerWidth="14" markerHeight="12" refX="12" refY="6" orient="auto"
+            markerUnits="userSpaceOnUse">
+      <path d="M0 0 L12 6 L0 12 Z" fill="#5e5e5e"/>
     </marker>
     <style>
-      .title { font: 700 26px Arial, sans-serif; fill: #16324f; }
-      .actor { fill: #f4f8fc; stroke: #1f5f99; stroke-width: 2; rx: 8; }
-      .actor-text { font: 700 15px Arial, sans-serif; fill: #16324f; text-anchor: middle; }
-      .lifeline { stroke: #7a8a99; stroke-width: 1.5; stroke-dasharray: 7 6; }
-      .request { stroke: #1f5f99; stroke-width: 2; marker-end: url(#arrow); }
-      .response { stroke: #1f5f99; stroke-width: 2; stroke-dasharray: 7 5; marker-end: url(#arrow); }
-      .message { font: 14px Arial, sans-serif; fill: #1d2d3d; text-anchor: middle; }
-      .message-strong { font: 700 14px Arial, sans-serif; fill: #1d2d3d; text-anchor: middle; }
-      .note { fill: #fff7d6; stroke: #c89211; stroke-width: 1.5; rx: 8; }
-      .note-text { font: 14px Arial, sans-serif; fill: #4a3a0a; }
-      .step { fill: #1f5f99; }
-      .step-text { font: 700 13px Arial, sans-serif; fill: #ffffff; text-anchor: middle; dominant-baseline: middle; }
+      .frame { fill: #ffffff; stroke: #5e5e5e; stroke-width: 2; }
+      .line { fill: none; stroke: #5e5e5e; stroke-width: 2; }
+      .lifeline { fill: none; stroke: #5e5e5e; stroke-width: 2; stroke-dasharray: 20 10; }
+      .message { fill: none; stroke: #5e5e5e; stroke-width: 2; marker-end: url(#arrow); }
+      .client { fill: #fc9432; stroke: #5e5e5e; stroke-width: 2; }
+      .service { fill: #6db1ff; stroke: #5e5e5e; stroke-width: 2; }
+      .activation { fill: #ffffff; stroke: #5e5e5e; stroke-width: 2; }
+      .header { fill: #333333; font: 23px Arial, sans-serif; }
+      .actor-text { fill: #000000; font: 29px Arial, sans-serif; text-anchor: middle; }
+      .label { fill: #333333; font: 22px Arial, sans-serif; }
+      .message-text { fill: #333333; font: 21px Arial, sans-serif; text-anchor: middle; }
+      .self-message-text { fill: #333333; font: 20px Arial, sans-serif; }
     </style>
   </defs>
 
-  <rect width="1200" height="820" fill="#ffffff"/>
-  <text class="title" x="600" y="38" text-anchor="middle">Attach an E-File document to a shipment</text>
+  <rect class="frame" x="1" y="1" width="998" height="928" rx="6"/>
+  <path class="line" d="M1 34 H890 L902 22 V1"/>
+  <text class="header" x="118" y="25">Attach E-File document to shipment (EFile) : EFile</text>
 
-  <g>
-    <rect class="actor" x="40" y="65" width="200" height="54"/>
-    <text class="actor-text" x="140" y="97">API consumer</text>
+  <line class="lifeline" x1="250" y1="190" x2="250" y2="910"/>
+  <line class="lifeline" x1="750" y1="190" x2="750" y2="910"/>
 
-    <rect class="actor" x="350" y="65" width="200" height="54"/>
-    <text class="actor-text" x="450" y="88">CargoSoft API</text>
-    <text class="actor-text" x="450" y="106">REST endpoints</text>
+  <rect class="client" x="150" y="70" width="200" height="120" rx="7"/>
+  <text class="actor-text" x="250" y="142">Client</text>
 
-    <rect class="actor" x="660" y="65" width="200" height="54"/>
-    <text class="actor-text" x="760" y="88">CargoSoft</text>
-    <text class="actor-text" x="760" y="106">shipment data</text>
+  <rect class="service" x="650" y="70" width="200" height="120" rx="7"/>
+  <text class="actor-text" x="750" y="127">CargoSoft</text>
+  <text class="actor-text" x="750" y="163">API</text>
 
-    <rect class="actor" x="970" y="65" width="190" height="54"/>
-    <text class="actor-text" x="1065" y="88">Configured</text>
-    <text class="actor-text" x="1065" y="106">E-File system</text>
-  </g>
+  <rect class="activation" x="225" y="230" width="50" height="655" rx="6"/>
+  <rect class="activation" x="725" y="230" width="50" height="655" rx="6"/>
 
-  <line class="lifeline" x1="140" y1="119" x2="140" y2="775"/>
-  <line class="lifeline" x1="450" y1="119" x2="450" y2="775"/>
-  <line class="lifeline" x1="760" y1="119" x2="760" y2="775"/>
-  <line class="lifeline" x1="1065" y1="119" x2="1065" y2="775"/>
+  <rect class="frame" x="55" y="245" width="890" height="190" rx="7"/>
+  <path class="line" d="M55 282 H155 L167 270 V245"/>
+  <text class="label" x="92" y="272">opt</text>
+  <text class="label" x="76" y="316">[JWT == null]</text>
 
-  <circle class="step" cx="26" cy="160" r="15"/>
-  <text class="step-text" x="26" y="160">1</text>
-  <line class="request" x1="140" y1="160" x2="450" y2="160"/>
-  <text class="message-strong" x="295" y="151">POST /auth/token</text>
-  <text class="message" x="295" y="178">username + password</text>
+  <rect class="frame" x="105" y="330" width="790" height="72" rx="7"/>
+  <path class="line" d="M105 366 H207 L219 354 V330"/>
+  <text class="label" x="143" y="357">ref</text>
+  <text class="message-text" x="500" y="386">Retrieve Token (username, password) : JWT</text>
 
-  <line class="response" x1="450" y1="210" x2="140" y2="210"/>
-  <text class="message" x="295" y="202">200 OK · JWT</text>
+  <line class="message" x1="275" y1="510" x2="725" y2="510"/>
+  <text class="message-text" x="500" y="472">post (cargosoft/shipment/lookup)</text>
+  <text class="message-text" x="500" y="497">CLIENT + SHIPMENT_NUMBER</text>
 
-  <circle class="step" cx="26" cy="270" r="15"/>
-  <text class="step-text" x="26" y="270">2</text>
-  <line class="request" x1="140" y1="270" x2="450" y2="270"/>
-  <text class="message-strong" x="295" y="261">POST /cargosoft/shipment/lookup</text>
-  <text class="message" x="295" y="288">Bearer JWT · CLIENT + SHIPMENT_NUMBER</text>
+  <line class="message" x1="725" y1="590" x2="275" y2="590"/>
+  <text class="message-text" x="500" y="620">Response (200 Ok)</text>
+  <text class="message-text" x="500" y="646">Shipment[0..*]</text>
 
-  <line class="request" x1="450" y1="320" x2="760" y2="320"/>
-  <text class="message" x="605" y="311">Find matching shipment</text>
+  <path class="message" d="M275 675 H390 V720 H275"/>
+  <text class="self-message-text" x="410" y="687">Build CSFILE reference</text>
+  <text class="self-message-text" x="410" y="714">shipment_number + &quot;#&quot; + client</text>
 
-  <line class="response" x1="760" y1="365" x2="450" y2="365"/>
-  <text class="message" x="605" y="356">Shipment data</text>
+  <line class="message" x1="275" y1="790" x2="725" y2="790"/>
+  <text class="message-text" x="500" y="752">post (cargosoft/efile)</text>
+  <text class="message-text" x="500" y="777">Document + CSFILE reference</text>
 
-  <line class="response" x1="450" y1="410" x2="140" y2="410"/>
-  <text class="message" x="295" y="390">200 OK</text>
-  <text class="message" x="295" y="408">id + shipment_number + client</text>
-
-  <circle class="step" cx="26" cy="465" r="15"/>
-  <text class="step-text" x="26" y="465">3</text>
-  <rect class="note" x="45" y="445" width="395" height="66"/>
-  <text class="note-text" x="62" y="470">Build the shipment reference:</text>
-  <text class="note-text" x="62" y="493" font-weight="700">CSFILE = &lt;shipment_number&gt;#&lt;client&gt;</text>
-
-  <circle class="step" cx="26" cy="565" r="15"/>
-  <text class="step-text" x="26" y="565">4</text>
-  <line class="request" x1="140" y1="565" x2="450" y2="565"/>
-  <text class="message-strong" x="295" y="546">POST /cargosoft/efile</text>
-  <text class="message" x="295" y="564">Bearer JWT · Base64 document</text>
-  <text class="message" x="295" y="582">client + CSFILE reference</text>
-
-  <line class="request" x1="450" y1="625" x2="1065" y2="625"/>
-  <text class="message" x="758" y="616">Store document and reference</text>
-
-  <line class="response" x1="1065" y1="670" x2="450" y2="670"/>
-  <text class="message" x="758" y="661">Stored E-File document ID</text>
-
-  <line class="response" x1="450" y1="715" x2="140" y2="715"/>
-  <text class="message" x="295" y="697">200 OK</text>
-  <text class="message" x="295" y="715">E-File document + id</text>
-
-  <rect class="note" x="535" y="735" width="625" height="55"/>
-  <text class="note-text" x="553" y="758">No automatic upload retry. After an ambiguous timeout, look up E-File documents</text>
-  <text class="note-text" x="553" y="779">with the shipment id before retrying the non-idempotent POST request.</text>
+  <line class="message" x1="725" y1="850" x2="275" y2="850"/>
+  <text class="message-text" x="500" y="880">Response (200 Ok)</text>
+  <text class="message-text" x="500" y="906">E-File document + id</text>
 </svg>
