@@ -286,6 +286,8 @@ such as shipment events or E-File lookups.
 
 <p id='CHAPTER_EFILE_SHIPMENT'></p>
 
+> **Development notice:** The endpoint used in this workflow is still under development and may change.
+
 **Goal**
 
 Create an E-File document and link it to an existing shipment in the same request.
@@ -389,6 +391,8 @@ document to the resolved shipment.
 ## Attach a status to a shipment
 
 <p id='CHAPTER_STATUS_SHIPMENT'></p>
+
+> **Development notice:** The endpoint used in this workflow is still under development and may change.
 
 **Goal**
 
