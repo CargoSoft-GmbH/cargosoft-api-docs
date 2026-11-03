@@ -2754,6 +2754,15 @@ components:
           type: string
           description: The CargoSoft voucher type of the calculation line.
           minLength: 1
+        allocation:
+          type: string
+          description: The calculated allocation of the calculation line.
+          readOnly: true
+        income_expense_indicator:
+          type: string
+          description: The calculated income or expense indicator of the calculation
+            line.
+          readOnly: true
         invoice_party:
           $ref: "#/components/schemas/AddressMatchcode"
           description: The address type and number of the party to be invoiced.
@@ -2795,6 +2804,18 @@ components:
           type: number
           format: double
           description: The exchange rate applied to the calculation line.
+        home_currency_matchcode:
+          type: string
+          description: The CargoSoft currency matchcode of the company's home currency.
+          readOnly: true
+        revenue_amount_in_home_currency:
+          type: number
+          description: The calculated revenue amount in the company's home currency.
+          readOnly: true
+        expense_amount_in_home_currency:
+          type: number
+          description: The calculated expense amount in the company's home currency.
+          readOnly: true
         origin:
           $ref: "#/components/schemas/ShipmentCalculationLocation"
           description: The origin used for route-related calculation information.
