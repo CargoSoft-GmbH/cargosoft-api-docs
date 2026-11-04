@@ -1,0 +1,2393 @@
+openapi: 3.0.3
+info:
+  title: CargoSoft ECM Public API
+  version: 1.0.0
+  description: Provides access to public ECM features (rate search, quotation import, etc.)
+
+servers:
+  - url: https://<application-url>/rest
+    description: Public endpoints (authentication)
+  - url: https://<application-url>/secured
+    description: Secured endpoints (search)
+
+paths:
+  /auth/token:
+    post:
+      tags: [Auth]
+      operationId: retrieveAuthToken
+      summary: Issue a JWT for a user
+      servers:
+        - url: https://<application-url>/rest
+      description: >
+        Accepts username/password via x-www-form-urlencoded and returns a JWT.
+      security: [] # matches @PermitAll
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                  description: The user's login name.
+                password:
+                  type: string
+                  format: password
+                  description: The user's password.
+      responses:
+        "200":
+          description: JWT successfully issued.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        "401":
+          description: Wrong username or password.
+          # No response body according to the implementation.
+
+  /ecm/v1/search:
+    post:
+      tags: [ECM]
+      operationId: findRates
+      summary: Search for rates
+      servers:
+        - url: https://<application-url>/secured
+      description: >
+        Performs a rate search based on the given query.
+        Accessible only to users with roles `admin`, `sysadmin`, or `accrual`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RatesQuery'
+            examples:
+              sample:
+                $ref: '#/components/examples/RateSearchExample'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/RatesQuery'
+      responses:
+        "200":
+          description: Successful rate search result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                sample:
+                  $ref: '#/components/examples/RateSearchResponseExample'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Response'
+        "400":
+          description: Bad request (invalid or missing query parameters).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BadRequestError' }
+              examples:
+                enumError:
+                  $ref: '#/components/examples/EnumDeserializationError'
+                validationError:
+                  $ref: '#/components/examples/ValidationError'
+                companyError:
+                  $ref: '#/components/examples/CompanyError'
+            application/xml:
+              schema: { $ref: '#/components/schemas/BadRequestError' }
+            text/plain:
+              schema: { $ref: '#/components/schemas/PlainValidationError' }
+              examples:
+                sample:
+                  summary: Legacy plain-text validation error
+                  value: |-
+                    [PARAMETER]
+                    [findRates.arg0.dateRangeBegin]
+                    [must match yyyy-MM-dd]
+                    [2025-0-07]
+        "401":
+          description: Unauthorized (invalid or missing JWT).
+        "403":
+          description: Forbidden (user lacks required roles).
+          
+  /ecm/v1/conditions:
+    get:
+      tags: [ECM]
+      operationId: getAvailableConditions
+      summary: List available conditions
+      servers:
+        - url: https://<application-url>/secured
+      description: Returns the list of available conditions with metadata and allowed values.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Available conditions.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConditionInfo'
+              examples:
+                sample:
+                  summary: Example list of conditions
+                  value:
+                    - key: "weight"
+                      conditionType: NUMERIC
+                      qualifier: ["kg=Kg(s)", "ton=Ton(s)", "lbs=Lb(s)"]
+                      possibleValues: []
+                      description: "Package weight"
+                    - key: "dangerousGood"
+                      conditionType: YESNO
+                      qualifier: []
+                      possibleValues: []
+                      description: "Indicates if shipment contains dangerous goods."
+                    - key: "imdgClass"
+                      conditionType: SELECTION
+                      qualifier: []
+                      possibleValues: ["1=1", "1.1=1.1", "1.2=1.2", "1.3=1.3", "1.4=1.4", "1.5=1.5", "1.6=1.6", "2=2"]
+                      description: "Hazardous materials class."
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConditionInfo'
+        "401":
+          description: Unauthorized (invalid or missing JWT).
+        "403":
+          description: Forbidden (user lacks required roles).
+
+  /ecm/v1/billingCategories{modePart}:
+    get:
+      tags: [ ECM ]
+      operationId: getBillingCategories
+      servers:
+        - url: https://<application-url>/secured
+      security:
+        - bearerAuth: [ ]
+      summary: Get billing categories (optionally filtered by transport mode)
+      description: >
+        Returns billing categories.  
+        If `mode` is provided (e.g. `/billingCategories/SEA`), only billing categories
+        for that transport mode are returned.  
+        If omitted (simply `/billingCategories`), all billing categories are returned.
+      parameters:
+        - name: modePart
+          in: path
+          required: false
+          style: simple
+          explode: false
+          schema:
+            type: string
+            pattern: '(/[A-Za-z]+)?'
+          example: /SEA
+        - name: mode
+          in: path
+          required: false
+          description: Transport mode (e.g. SEA, AIR, ROAD, RAIL)
+          schema:
+            type: string
+            enum: [ SEA, AIR, ROAD, RAIL, BARGE, KEP ]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingCategoriesResponse'
+        '400':
+          description: Invalid transport mode
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+
+  /ecm/v1/calculationBases:
+    get:
+      tags: [ ECM ]
+      operationId: getCalculationBases
+      servers:
+        - url: https://<application-url>/secured
+      security:
+        - bearerAuth: [ ]
+      summary: Get calculation bases
+      description: >
+        Returns available calculation bases.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalculationBasesResponse'
+
+  /ecm/v1/packageTypes{loadTypePart}:
+    get:
+      tags: [ ECM ]
+      operationId: getPackageTypes
+      servers:
+        - url: https://<application-url>/secured
+      security:
+        - bearerAuth: [ ]
+      summary: Get package types (optionally filtered by load type)
+      description: >
+        Returns package types.  
+        If `loadType` is provided (e.g. `/packageTypes/full` or `/packageTypes/less`), only package types
+        for that load type are returned.  
+        If omitted (simply `/packageTypes`), all package types are returned.
+      parameters:
+        - name: loadTypePart
+          in: path
+          required: false
+          style: simple
+          explode: false
+          schema:
+            type: string
+            pattern: '(/[A-Za-z]+)?'
+          example: /full
+        - name: loadType
+          in: path
+          required: false
+          description: Load type (e.g. full, less)
+          schema:
+            type: string
+            enum: [ full, less ]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackageTypesResponse'
+
+  /ecm/v1/addresses/{companyFunction}:
+    get:
+      tags: [ ECM ]
+      operationId: getAddresses
+      servers:
+        - url: https://<application-url>/secured
+      security:
+        - bearerAuth: [ ]
+      summary: Get related address filtered by function
+      description: >
+        Returns company address codes for companies with the provided company function.
+        Company function is required and can be one of the following:
+        [ customer, oceanCarrier, airline, bargeCarrier, courier, trucker, railroadCarrier, containerDepot ]
+      parameters:
+        - name: companyFunction
+          in: path
+          required: true
+          description: Company function (e.g. customer).
+          schema:
+            type: string
+            enum: [ customer, oceanCarrier, airline, bargeCarrier, courier, trucker, railroadCarrier, containerDepot ]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressesResponse'
+        '400':
+          description: Invalid company function
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+
+  /ecm/v1/locations:
+    post:
+      tags: [ ECM ]
+      servers:
+        - url: https://<application-url>/secured
+      security:
+        - bearerAuth: [ ]
+      summary: Suggest matching locations based on input
+      description: >
+        Returns a list of matching locations (e.g., seaports, airports, cities)
+        based on the provided input text and optional filters.
+      operationId: suggestLocations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuggestLocationsRequest'
+            example:
+              suggestInput: "Hamb"
+              types: [ "SEAPORT", "CITY" ]
+              countryIsoCode: "DE"
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/SuggestLocationsRequest'
+            example: |
+              <suggestLocationsRequest>
+                <suggestInput>Hamb</suggestInput>
+                <types>SEAPORT</types>
+                <types>CITY</types>
+                <countryIsoCode>DE</countryIsoCode>
+              </suggestLocationsRequest>
+      responses:
+        '200':
+          description: Successful response with a list of suggested locations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuggestLocationsResponse'
+              example:
+                locations:
+                  - type: "SEAPORT"
+                    code: "DEHAM"
+                  - type: "UN_CITY"
+                    name: "Hamburg"
+                    code: "DEHAM"
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/SuggestLocationsResponse'
+              example: |
+                <suggestLocationsResponse>
+                  <location>
+                    <type>SEAPORT</type>
+                    <code>DEHAM</code>
+                  </location>
+                  <location>
+                    <id>2</id>
+                    <type>UN_CITY</type>
+                    <name>Hamburg</name>
+                    <code>DEHAM</code>
+                  </location>
+                </suggestLocationsResponse>
+        '400':
+          description: Invalid request or missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+
+  /ecm/v1/quotations/adhoc:
+    post:
+      tags: [ ECM ]
+      operationId: createAdhocQuotation
+      summary: Create an ad-hoc quotation
+      servers:
+        - url: https://{host}/secured
+          variables: { host: { default: <application-url> } }
+      description: >
+        Creates a new ad-hoc quotation for a customer. 
+        Requires roles `admin`, `sysadmin`, or `accrual`.
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdhocQuotation' }
+            examples:
+              sample:
+                $ref: '#/components/examples/AdhocQuotationExample'
+          application/xml:
+            schema: { $ref: '#/components/schemas/AdhocQuotation' }
+      responses:
+        "200":
+          description: Request accepted.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ContractCreationResponse' }
+        "400":
+          description: Bad request (invalid or missing query parameters).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BadRequestError' }
+              examples:
+
+            application/xml:
+              schema: { $ref: '#/components/schemas/BadRequestError' }
+            text/plain:
+              schema: { $ref: '#/components/schemas/PlainValidationError' }
+        "401":
+          description: Unauthorized (invalid or missing JWT).
+        "403":
+          description: Forbidden (user lacks required roles).
+
+  /ecm/v1/quotations/general:
+    post:
+      tags: [ ECM ]
+      operationId: createGeneralQuotation
+      summary: Create a general quotation
+      servers:
+        - url: https://{host}/secured
+          variables: { host: { default: <application-url> } }
+      description: >
+        Creates a new general quotation for a customer. 
+        Requires roles `admin`, `sysadmin`, or `accrual`.
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/GeneralQuotation' }
+            examples:
+              sample:
+                $ref: '#/components/examples/GeneralQuotationExample'
+          application/xml:
+            schema: { $ref: '#/components/schemas/GeneralQuotation' }
+      responses:
+        "200":
+          description: Request accepted.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ContractCreationResponse'}
+        "400":
+          description: Bad request (invalid or missing parameters).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BadRequestError' }
+              examples:
+
+            application/xml:
+              schema: { $ref: '#/components/schemas/BadRequestError' }
+            text/plain:
+              schema: { $ref: '#/components/schemas/PlainValidationError' }
+        "401":
+          description: Unauthorized (invalid or missing JWT).
+        "403":
+          description: Forbidden (user lacks required roles).
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    TokenResponse:
+      type: object
+      description: >
+        Response containing the JWT. In XML, the `token` is serialized as the text content
+        of the `<TokenResponse>` element.
+      properties:
+        token:
+          type: string
+          description: The JWT as a string.
+      required: [token]
+      xml:
+        name: TokenResponse
+        # Note: OpenAPI cannot natively mark a property as XML text content.
+        # Actual wire format is driven by your Jackson `@JacksonXmlText` annotation.
+
+    RatesQuery:
+      type: object
+      description: Query object for searching rates.
+      properties:
+        mode:
+          type: string
+          description: Query mode. Default is `BUYING`.
+          enum: [BUYING, SELLING]
+          default: BUYING
+        normCurrency:
+          allOf:
+            - $ref: '#/components/schemas/Currency'
+          description: Currency into which result prices are converted. Default may be system-defined.
+          example: EUR
+        dateRangeBegin:
+          type: string
+          format: date
+          description: Start date of the query range (required). yyyy-MM-dd
+          example: 2025-09-01
+        dateRangeEnd:
+          type: string
+          format: date
+          description: End date of the query range (required). yyyy-MM-dd
+          example: 2025-09-30
+        originDepot:
+          allOf:
+            - $ref: '#/components/schemas/Company'
+          description: Company/depot at origin used for operational context (optional).
+        destinationDepot:
+          allOf:
+            - $ref: '#/components/schemas/Company'
+          description: Company/depot at destination used for operational context (optional).
+        originIncoterm:
+          $ref: '#/components/schemas/IncotermInfo'
+        destinationIncoterm:
+          $ref: '#/components/schemas/IncotermInfo'
+        legs:
+          type: array
+          description: Transport legs. At least one required.
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/Leg'
+        destination:
+          description: Destination location.
+          oneOf:
+            - $ref: '#/components/schemas/SeaportLocation'
+            - $ref: '#/components/schemas/AirportLocation'
+            - $ref: '#/components/schemas/RailstationLocation'
+            - $ref: '#/components/schemas/CityLocation'
+            - $ref: '#/components/schemas/PostalCodeLocation'
+            - $ref: '#/components/schemas/UnCityLocation'
+        collis:
+          type: array
+          description: Shipment collis (packages). At least one required.
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/Colli'
+      required:
+        - dateRangeBegin
+        - dateRangeEnd
+        - legs
+        - destination
+        - collis
+            
+    Leg:
+      type: object
+      description: A transport leg specification.
+      properties:
+        origin:
+          description: Origin of the leg.
+          oneOf:
+            - $ref: '#/components/schemas/SeaportLocation'
+            - $ref: '#/components/schemas/AirportLocation'
+            - $ref: '#/components/schemas/RailstationLocation'
+            - $ref: '#/components/schemas/CityLocation'
+            - $ref: '#/components/schemas/PostalCodeLocation'
+            - $ref: '#/components/schemas/UnCityLocation'
+        transportModes:
+          type: array
+          description: Transport modes applicable to this leg.
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/TransportMode'
+        conditions:
+          type: array
+          description: Optional conditions constraining the leg.
+          items:
+            $ref: '#/components/schemas/ConditionForSearch'
+        serviceTypes:
+          type: array
+          description: Optional service types available for this leg.
+          items:
+            $ref: '#/components/schemas/ServiceType'
+        carriers:
+          type: array
+          description: Optional carriers available for this leg.
+          items:
+            $ref: '#/components/schemas/Carrier'
+      required: [origin, transportModes]
+
+    AdhocLeg:
+      type: object
+      description: Transport leg for ad-hoc quotations (origin requires routingType).
+      properties:
+        origin:
+          description: Origin of the leg, including required routingType.
+          oneOf:
+            - $ref: '#/components/schemas/SeaportLocationForRouting'
+            - $ref: '#/components/schemas/AirportLocationForRouting'
+            - $ref: '#/components/schemas/RailstationLocationForRouting'
+            - $ref: '#/components/schemas/CityLocationForRouting'
+            - $ref: '#/components/schemas/PostalCodeLocationForRouting'
+            - $ref: '#/components/schemas/UnCityLocationForRouting'
+        transportModes:
+          type: array
+          minItems: 1
+          description: Transport modes applicable to this leg.
+          items:
+            $ref: '#/components/schemas/TransportMode'
+        conditions:
+          type: array
+          description: Optional conditions constraining the leg.
+          items:
+            $ref: '#/components/schemas/ConditionForSearch'
+        serviceTypes:
+          type: array
+          description: Optional service types available for this leg.
+          items:
+            $ref: '#/components/schemas/ServiceType'
+        carriers:
+          type: array
+          description: Optional carriers available for this leg.
+          items:
+            $ref: '#/components/schemas/Carrier'
+      required: [ origin, transportModes ]
+
+    TransportMode:
+      type: string
+      description: Transport mode.
+      enum: [SEA, AIR, RAIL, ROAD, BARGE, KEP]
+
+    ServiceType:
+      type: object
+      description: Service type bound to a particular transport mode.
+      properties:
+        transportMode:
+          $ref: '#/components/schemas/TransportMode'
+        code:
+          type: string
+          description: Service type code. Must exist in the system.
+      required: [transportMode, code]
+
+    Carrier:
+      type: object
+      description: Carrier bound to a particular transport mode.
+      properties:
+        transportMode:
+          $ref: '#/components/schemas/TransportMode'
+        company:
+          $ref: '#/components/schemas/Company'
+      required: [transportMode, company]
+
+    # Condition: sealed hierarchy with a required `key` on the base.
+    Condition:
+      description: A condition for a leg/rate/colli. Use the discriminator `conditionType`.
+      oneOf:
+        - $ref: '#/components/schemas/MinMaxBasedCondition'
+        - $ref: '#/components/schemas/SelectionBasedCondition'
+        - $ref: '#/components/schemas/TextBasedCondition'
+        - $ref: '#/components/schemas/YesNoBasedCondition'
+      discriminator:
+        propertyName: conditionType
+        mapping:
+          MINMAX:   '#/components/schemas/MinMaxBasedCondition'
+          SELECTION: '#/components/schemas/SelectionBasedCondition'
+          TEXT:      '#/components/schemas/TextBasedCondition'
+          YESNO:     '#/components/schemas/YesNoBasedCondition'
+
+    ConditionForSearch:
+      description: A condition for a leg/rate/colli. Use the discriminator `conditionType`.
+      oneOf:
+        - $ref: '#/components/schemas/NumericBasedCondition'
+        - $ref: '#/components/schemas/SelectionBasedCondition'
+        - $ref: '#/components/schemas/TextBasedCondition'
+        - $ref: '#/components/schemas/YesNoBasedCondition'
+      discriminator:
+        propertyName: conditionType
+        mapping:
+          NUMERIC: '#/components/schemas/NumericBasedCondition'
+          SELECTION: '#/components/schemas/SelectionBasedCondition'
+          TEXT: '#/components/schemas/TextBasedCondition'
+          YESNO: '#/components/schemas/YesNoBasedCondition'
+
+    ConditionBase:
+      type: object
+      description: Base properties shared by all conditions.
+      properties:
+        key:
+          type: string
+          description: Condition key.
+        conditionType:
+          type: string
+          description: Discriminator indicating the condition subtype.
+          enum: [NUMERIC, SELECTION, TEXT, YESNO]
+      required: [key, conditionType]
+
+    MinMaxBasedCondition:
+      allOf:
+        - $ref: '#/components/schemas/ConditionBase'
+        - type: object
+          properties:
+            minValue:
+              type: number
+              format: double
+              description: Numeric value of the condition.
+            maxValue:
+              type: number
+              format: double
+              description: Numeric value of the condition.
+            qualifier:
+              type: string
+              description: Optional qualifier for the numeric condition.
+
+    NumericBasedCondition:
+      allOf:
+        - $ref: '#/components/schemas/ConditionBase'
+        - type: object
+          properties:
+            value:
+              type: number
+              format: double
+              description: Numeric value of the condition.
+            qualifier:
+              type: string
+              description: Optional qualifier for the numeric condition.
+
+    SelectionBasedCondition:
+      allOf:
+        - $ref: '#/components/schemas/ConditionBase'
+        - type: object
+          properties:
+            value:
+              type: string
+              description: Selected value.
+
+    TextBasedCondition:
+      allOf:
+        - $ref: '#/components/schemas/ConditionBase'
+        - type: object
+          properties:
+            value:
+              type: string
+              description: Free-text value.
+
+    YesNoBasedCondition:
+      allOf:
+        - $ref: '#/components/schemas/ConditionBase'
+        - type: object
+          properties:
+            value:
+              type: boolean
+              description: Boolean value.
+              
+    ConditionInfo:
+      allOf:
+        - $ref: '#/components/schemas/ConditionBase'   # brings in key + conditionType (required)
+        - type: object
+          description: Metadata describing an available condition, including qualifiers and allowed values.
+          properties:
+            qualifier:
+              type: array
+              items:
+                type: string
+              description: Allowed qualifiers for this condition (if any).
+            possibleValues:
+              type: array
+              items:
+                type: string
+              description: Enumerated allowed values (mainly for SELECTION or boolean-like conditions).
+            description:
+              type: string
+              description: Human-readable description of the condition.
+      example:
+        key: "MAX_WEIGHT_KG"
+        conditionType: NUMERIC
+        qualifier: ["kg","lb"]
+        possibleValues: []
+        description: "Maximum allowed weight."
+
+    IncotermInfo:
+      type: object
+      description: >
+        ICC Incoterm information. If provided, the code is sufficient; it can be refined
+        by either specifying a concrete port location or by setting the `useAddressLocation` flag.
+      properties:
+        code:
+          type: string
+          description: ICC Incoterm code (e.g., FOB, CIF). Must exist in the system.
+        location:
+          description: Concrete port location to refine the incoterm.
+          oneOf:
+            - $ref: '#/components/schemas/SeaportLocation'
+            - $ref: '#/components/schemas/AirportLocation'
+            - $ref: '#/components/schemas/RailstationLocation'
+        useAddressLocation:
+          type: boolean
+          description: >
+            Set to true if, for origin-type Incoterms, the Pickup Location should be used,
+            or for destination-type Incoterms, the Delivery Location should be used.
+      required:
+        - code
+      example:
+        code: FOB
+        location:
+          code: DEHAM
+          type: SEAPORT
+        useAddressLocation: false
+
+    Location:
+      type: object
+      description: >
+        Base location. `type` and `group` are set server-side and returned in responses.
+        For ad-hoc routing, use the *ForRouting variants where `routingType` is required.
+      properties:
+        type:
+          type: string
+          description: Location type.
+          readOnly: true
+          enum: [SEAPORT, AIRPORT, RAILSTATION, UN_CITY, CITY, POSTALCODE]
+        group:
+          type: string
+          description: Location group.
+          readOnly: true
+          enum: [PORT, POINT]
+
+    RoutingLocationBase:
+      type: object
+      description: >
+        Overlay for request contexts where routingType is required.
+        Used only in ad-hoc quotation routing.
+      properties:
+        routingType:
+          type: string
+          description: Routing role of this location within the route.
+          enum: [ PICKUP, ORIGIN_HUB, MAIN_ORIGIN, MAIN_DESTINATION, DESTINATION_HUB, DELIVERY, VIA ]
+      required: [ routingType ]
+
+    # -------- POINT (abgeleitete Klassen) --------
+    CityLocation:
+      allOf:
+        - $ref: '#/components/schemas/Location'
+        - type: object
+          description: City location.
+          properties:
+            type:
+              type: string
+              readOnly: true
+              enum: [CITY]
+            group:
+              type: string
+              readOnly: true
+              enum: [POINT]
+            country:
+              type: string
+              description: ISO 3166-1 alpha-2 country code.
+            name:
+              type: string
+              description: City/locality name.
+          required: [country, name]
+      example:
+        type: CITY
+        group: POINT
+        country: DE
+        name: Hamburg
+
+    PostalCodeLocation:
+      allOf:
+        - $ref: '#/components/schemas/Location'
+        - type: object
+          description: Postal-code based point location.
+          properties:
+            type:
+              type: string
+              readOnly: true
+              enum: [POSTALCODE]
+            group:
+              type: string
+              readOnly: true
+              enum: [POINT]
+            country:
+              type: string
+              description: ISO 3166-1 alpha-2 country code.
+            name:
+              type: string
+              description: Postal code name.
+            code:
+              type: string
+              description: Postal code (required for this subtype).
+          required: [country, name, code]
+      example:
+        type: POSTALCODE
+        group: POINT
+        country: DE
+        name: Hamburg
+        code: "20457"
+
+    UnCityLocation:
+      allOf:
+        - $ref: '#/components/schemas/Location'
+        - type: object
+          description: UN/LOCODE-based city location.
+          properties:
+            type:
+              type: string
+              readOnly: true
+              enum: [UN_CITY]
+            group:
+              type: string
+              readOnly: true
+              enum: [POINT]
+            code:
+              type: string
+              description: UN/LOCODE.
+          required: [code]
+      example:
+        type: UN_CITY
+        group: POINT
+        code: DEHAM
+
+    CityLocationForRouting:
+      allOf:
+        - $ref: '#/components/schemas/CityLocation'
+        - $ref: '#/components/schemas/RoutingLocationBase'
+    PostalCodeLocationForRouting:
+      allOf:
+        - $ref: '#/components/schemas/PostalCodeLocation'
+        - $ref: '#/components/schemas/RoutingLocationBase'
+    UnCityLocationForRouting:
+      allOf:
+        - $ref: '#/components/schemas/UnCityLocation'
+        - $ref: '#/components/schemas/RoutingLocationBase'
+
+    # -------- PORT (abgeleitete Klassen) --------
+    SeaportLocation:
+      allOf:
+        - $ref: '#/components/schemas/Location'
+        - type: object
+          description: Seaport location.
+          properties:
+            type:
+              type: string
+              readOnly: true
+              enum: [SEAPORT]
+            group:
+              type: string
+              readOnly: true
+              enum: [PORT]
+            code:
+              type: string
+              description: Port location code.
+          required: [code]
+      example:
+        type: SEAPORT
+        group: PORT
+        code: DEHAM
+
+    AirportLocation:
+      allOf:
+        - $ref: '#/components/schemas/Location'
+        - type: object
+          description: Airport location.
+          properties:
+            type:
+              type: string
+              readOnly: true
+              enum: [AIRPORT]
+            group:
+              type: string
+              readOnly: true
+              enum: [PORT]
+            code:
+              type: string
+              description: Port location code.
+          required: [code]
+      example:
+        type: AIRPORT
+        group: PORT
+        code: FRA
+
+    RailstationLocation:
+      allOf:
+        - $ref: '#/components/schemas/Location'
+        - type: object
+          description: Rail station location.
+          properties:
+            type:
+              type: string
+              readOnly: true
+              enum: [RAILSTATION]
+            group:
+              type: string
+              readOnly: true
+              enum: [PORT]
+            code:
+              type: string
+              description: Port location code.
+          required: [code]
+      example:
+        type: RAILSTATION
+        group: PORT
+        code: DEBRV
+
+    SeaportLocationForRouting:
+      allOf:
+        - $ref: '#/components/schemas/SeaportLocation'
+        - $ref: '#/components/schemas/RoutingLocationBase'
+    AirportLocationForRouting:
+      allOf:
+        - $ref: '#/components/schemas/AirportLocation'
+        - $ref: '#/components/schemas/RoutingLocationBase'
+    RailstationLocationForRouting:
+      allOf:
+        - $ref: '#/components/schemas/RailstationLocation'
+        - $ref: '#/components/schemas/RoutingLocationBase'
+
+    Colli:
+      description: >
+        Polymorphic colli type. The payload must be either a FullLoadColli or a LessLoadColli.
+        Both subtypes share the same structure. The discriminator field `colliType` determines the subtype.
+      oneOf:
+        - $ref: '#/components/schemas/FullLoadColli'
+        - $ref: '#/components/schemas/LessLoadColli'
+      discriminator:
+        propertyName: colliType
+        mapping:
+          FULL: '#/components/schemas/FullLoadColli'
+          LESS: '#/components/schemas/LessLoadColli'
+
+    ColliCreateExtension:
+      type: object
+      description: Additional fields allowed only when creating an ad-hoc quotation.
+      properties:
+        marks:
+          type: string
+          description: Optional shipping marks applied to the colli.
+        description:
+          type: string
+          description: Optional free-text description of the colli.
+
+    ColliForCreate:
+      description: Polymorphic colli type used only in ad-hoc quotation create requests.
+      oneOf:
+        - $ref: '#/components/schemas/FullLoadColliForCreate'
+        - $ref: '#/components/schemas/LessLoadColliForCreate'
+      discriminator:
+        propertyName: colliType
+        mapping:
+          FULL: '#/components/schemas/FullLoadColliForCreate'
+          LESS: '#/components/schemas/LessLoadColliForCreate'
+
+    ColliBase:
+      type: object
+      description: Common properties for all colli types.
+      properties:
+        colliType:
+          type: string
+          description: Discriminator indicating the subtype of colli.
+          enum: [FULL, LESS]
+        name:
+          type: string
+          description: Optional descriptive name of the colli.
+        quantity:
+          type: integer
+          format: int32
+          description: Optional quantity of this colli.
+        equipmentType:
+          type: string
+          description: Equipment type code. Must exist in the system.
+        conditions:
+          type: array
+          description: Optional conditions associated with the colli.
+          items:
+            $ref: '#/components/schemas/ConditionForSearch'
+      required:
+        - colliType
+        - equipmentType
+
+    FullLoadColli:
+      allOf:
+        - $ref: '#/components/schemas/ColliBase'
+        - type: object
+          description: Full-load colli (e.g., full container / trailer).
+          properties:
+            colliType:
+              type: string
+              enum: [FULL]
+              description: Fixed discriminator value for full-load colli.
+
+    FullLoadColliForCreate:
+      allOf:
+        - $ref: '#/components/schemas/FullLoadColli'
+        - $ref: '#/components/schemas/ColliCreateExtension'
+
+    LessLoadColli:
+      allOf:
+        - $ref: '#/components/schemas/ColliBase'
+        - type: object
+          description: Less-than-full-load colli (e.g., palletized cargo).
+          properties:
+            colliType:
+              type: string
+              enum: [LESS]
+              description: Fixed discriminator value for less-than-full-load colli.
+
+    LessLoadColliForCreate:
+      allOf:
+        - $ref: '#/components/schemas/LessLoadColli'
+        - $ref: '#/components/schemas/ColliCreateExtension'
+
+    Response:
+      type: object
+      description: Result of a rate search, including results and metadata.
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Result'
+        metaData:
+          $ref: '#/components/schemas/MetaData'
+
+    MetaData:
+      type: object
+      description: Meta information about the search execution and result set.
+      properties:
+        status:
+          type: string
+          description: Processing status (e.g., OK, ERROR).
+        infos:
+          type: array
+          items: { type: string }
+          description: Informational messages.
+        warnings:
+          type: array
+          items: { type: string }
+          description: Warning messages.
+        errors:
+          type: array
+          items: { type: string }
+          description: Error messages.
+        timeStampStart:
+          type: integer
+          format: int64
+          description: Start timestamp in epoch milliseconds.
+        timeStampEnd:
+          type: integer
+          format: int64
+          description: End timestamp in epoch milliseconds.
+        resultSize:
+          type: integer
+          format: int32
+          description: Number of results returned.
+        queryId:
+          type: integer
+          format: int64
+          description: Identifier of the executed query.
+
+    Result:
+      type: object
+      description: A result entry containing validity and detailed legs.
+      properties:
+        validFrom:
+          type: string
+          format: date
+          description: Validity start date (yyyy-MM-dd).
+        validTo:
+          type: string
+          format: date
+          description: Validity end date (yyyy-MM-dd).
+        legs:
+          type: array
+          description: Legs composing the priced route, including routing and rates.
+          items:
+            $ref: '#/components/schemas/ResultLeg'
+
+    ResultLeg:
+      type: object
+      description: A leg within a result, with routing, timing, and priced rates.
+      properties:
+        transportMode:
+          $ref: '#/components/schemas/TransportMode'
+        routing:
+          type: array
+          description: Ordered sequence of locations forming the route.
+          minItems: 1
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/SeaportLocation'
+              - $ref: '#/components/schemas/AirportLocation'
+              - $ref: '#/components/schemas/RailstationLocation'
+              - $ref: '#/components/schemas/CityLocation'
+              - $ref: '#/components/schemas/PostalCodeLocation'
+              - $ref: '#/components/schemas/UnCityLocation'
+        transitTime:
+          type: number
+          format: double
+          description: Transit time in days.
+        rates:
+          type: array
+          description: Priced items (rates, surcharges, side letters) applicable to this leg.
+          items:
+            $ref: '#/components/schemas/Rate'
+
+    Rate:
+      type: object
+      description: A single priced item (rate, surcharge, or sideletter).
+      properties:
+        id:
+          type: number
+          description: Internal ID of the rate object
+        rateType:
+          type: string
+          description: Type of the priced item.
+          enum: [RATE, SURCHARGE, SIDELETTER]
+        transportMode:
+          $ref: '#/components/schemas/TransportMode'
+        billingCategory:
+          $ref: '#/components/schemas/BillingCategory'
+        includedBillingCategories:
+          type: array
+          items: { $ref: '#/components/schemas/BillingCategory' }
+          description: Billing categories included in this item (if applicable).
+        validFromDate:
+          type: string
+          format: date
+          description: Item validity start date (yyyy-MM-dd).
+        validToDate:
+          type: string
+          format: date
+          description: Item validity end date (yyyy-MM-dd).
+        routing:
+          type: array
+          description: Route segments this item applies to.
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/SeaportLocation'
+              - $ref: '#/components/schemas/AirportLocation'
+              - $ref: '#/components/schemas/RailstationLocation'
+              - $ref: '#/components/schemas/CityLocation'
+              - $ref: '#/components/schemas/PostalCodeLocation'
+              - $ref: '#/components/schemas/UnCityLocation'
+        originDepot:
+          $ref: '#/components/schemas/Company'
+        destinationDepot:
+          $ref: '#/components/schemas/Company'
+        site:
+          type: string
+          description: >
+            Site for side letter applicability. Required when `rateType` is `SIDELETTER`.
+          enum: [ORIGIN, DESTINATION]
+        equipmentType:
+          $ref: '#/components/schemas/Equipment'
+        carrier:
+          $ref: '#/components/schemas/Company'
+        serviceType:
+          $ref: '#/components/schemas/ServiceType'
+        ranking:
+          type: string
+          description: Ranking of the item.
+          enum: [CORE, ALTERNATIVE, ADHOC]
+        transitTime:
+          $ref: '#/components/schemas/TransitTimeInformation'
+        frequency:
+          $ref: '#/components/schemas/FrequencyInformation'
+        weekdays:
+          type: string
+          description: Valid weekdays for this rate as comma separated string with 2-letter abbreviation (Mo, Tu, We, Th, Fr, Sa, Su)
+        remark:
+          type: string
+          description: Free-text remark.
+        conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Condition'
+          description: Optional conditions that apply to this priced item.
+        priceInformation:
+          allOf:
+            - $ref: '#/components/schemas/PriceInformation'
+          description: "Effective price for this rate line (the selling price in quotations)."
+        priceSumInformation:
+          allOf:
+            - $ref: '#/components/schemas/PriceResultInformation'
+          description: Aggregated price result with the concrete price information payload.
+        contractInformation:
+          allOf:
+            - $ref: '#/components/schemas/ContractInformation'
+          description: Contract metadata for items originating from a contract or rate sheet.
+
+    RateCreate:
+      type: object
+      description: >
+        Rate definition used when creating quotations. 
+        Similar to `Rate`. Does not include aggregated price but can include the referenced buying price information.
+      properties:
+        rateType:
+          type: string
+          enum: [ RATE, SURCHARGE, SIDELETTER ]
+        transportMode:
+          $ref: '#/components/schemas/TransportMode'
+        billingCategory:
+          $ref: '#/components/schemas/BillingCategory'
+        includedBillingCategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillingCategory'
+        validFromDate:
+          type: string
+          format: date
+        validToDate:
+          type: string
+          format: date
+        routing:
+          type: array
+          description: Route segments this rate applies to.
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/SeaportLocationForRouting'
+              - $ref: '#/components/schemas/AirportLocationForRouting'
+              - $ref: '#/components/schemas/RailstationLocationForRouting'
+              - $ref: '#/components/schemas/CityLocationForRouting'
+              - $ref: '#/components/schemas/PostalCodeLocationForRouting'
+              - $ref: '#/components/schemas/UnCityLocationForRouting'
+        originDepot:
+          $ref: '#/components/schemas/Company'
+        destinationDepot:
+          $ref: '#/components/schemas/Company'
+        site:
+          type: string
+          enum: [ ORIGIN, DESTINATION ]
+          description: Required when `rateType` is `SIDELETTER`.
+        equipmentType:
+          $ref: '#/components/schemas/Equipment'
+        carrier:
+          $ref: '#/components/schemas/Company'
+        serviceType:
+          $ref: '#/components/schemas/ServiceType'
+        ranking:
+          type: string
+          enum: [ CORE, ALTERNATIVE, ADHOC ]
+        remark:
+          type: string
+        conditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Condition'
+        priceInformation:
+          allOf:
+            - $ref: '#/components/schemas/PriceInformation'
+          description: "Effective price for this rate line (the selling price in quotations)."
+        buyingPriceInformation:
+          allOf:
+            - $ref: '#/components/schemas/PriceInformation'
+          description: "Optional original buying price used for accruals."
+        referenceContractNumber:
+          type: string
+          description: >
+            Optional, buying contract number this rate line references.
+      required:
+        - priceInformation
+        - rateType
+        - transportMode
+        - billingCategory
+        - equipmentType
+
+    Company:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          description: Company code (required, must exist in the system)
+          example: "A1000"
+        name:
+          type: string
+          description: Company name (optional, informational)
+          example: "Alexander Logistics"
+
+    Person:
+      type: object
+      description: Contact person responsible for the quotation.
+      properties:
+        email:
+          type: string
+          format: email
+          description: Person's email address.
+        firstName:
+          type: string
+          description: Person's given name.
+        lastName:
+          type: string
+          description: Person's family name.
+      required: [ email ]
+
+    ContractInformation:
+      type: object
+      description: Contract metadata (relevant for results originating from rate search).
+      properties:
+        contractNumber:
+          type: string
+        owner:
+          allOf:
+            - $ref: '#/components/schemas/Company'
+          description: Contract owner company (e.g., carrier or vendor).
+        holder:
+          allOf:
+            - $ref: '#/components/schemas/Company'
+          description: Contract holder company (e.g., your organization).
+        namedAccount:
+          allOf:
+            - $ref: '#/components/schemas/Company'
+          description: Named account company, if applicable.
+
+    PriceResultInformation:
+      type: object
+      description: >
+        Aggregated price result (sums/factors) and the type-specific detail object.
+      properties:
+        currency:
+          allOf:
+            - $ref: '#/components/schemas/Currency'
+          description:
+            Original currency of the price line.
+        normCurrency:
+          allOf:
+            - $ref: '#/components/schemas/Currency'
+          description:
+            Currency defined as standard currency for the result.
+        amountSum:
+          type: number
+          format: double
+          description: Sum of (amount * factor) according to the applied currency/logic.
+        normAmountSum:
+          type: number
+          format: double
+          description: Normalized sum (in the query currency).
+        factor:
+          type: number
+          format: double
+          description: Factor used during price calculation.
+        missingConditions:
+          type: array
+          items: { type: string }
+          description: Condition keys required by the calculation but missing from the query.
+        colliId:
+          type: string
+          description: Identifier linking this price to a specific colli (if applicable).
+
+    PriceInformation:
+      description: >
+        Polymorphic price detail matching the discriminator `type`.
+      oneOf:
+        - $ref: '#/components/schemas/CurrencyPriceInformation'
+        - $ref: '#/components/schemas/PercentagePriceInformation'
+        - $ref: '#/components/schemas/NoAmountPriceInformation'
+      discriminator:
+        propertyName: type
+        mapping:
+          CURRENCY: '#/components/schemas/CurrencyPriceInformation'
+          PERCENTAGE: '#/components/schemas/PercentagePriceInformation'
+          NO_AMOUNT: '#/components/schemas/NoAmountPriceInformation'
+
+    PriceInformationBase:
+      type: object
+      description: Common metadata for all price detail types.
+      properties:
+        type:
+          type: string
+          enum: [ CURRENCY, PERCENTAGE, NO_AMOUNT ]
+          description: Discriminator (muss zu diesem Subtyp passen).
+        sourceRateId:
+          type: number
+          description: Internal ID of the buying rate used for this contract rate
+      required: [ type ]
+
+    CurrencyPriceInformation:
+      allOf:
+        - $ref: '#/components/schemas/PriceInformationBase'
+        - type: object
+          description: Price detail for fixed amounts in a currency.
+          properties:
+            amount:
+              type: number
+              format: double
+              description: Amount value (in `currency`).
+            normAmount:
+              type: number
+              format: double
+              description: Amount value (in `normCurrency`).
+            currency:
+              $ref: '#/components/schemas/Currency'
+            calculationFactor:
+              type: number
+              format: double
+              description: Optional calculation factor.
+            calculationBase:
+              $ref: '#/components/schemas/CalculationBase'
+            shipmentLevel:
+              type: boolean
+              description: True if the price applies at shipment level.
+          required: [ amount, currency, calculationBase ]
+
+    PercentagePriceInformation:
+      allOf:
+        - $ref: '#/components/schemas/PriceInformationBase'
+        - type: object
+          description: Price detail for percentage-based charges/allowances.
+          properties:
+            percentage:
+              type: number
+              format: double
+              description: Percentage value (e.g., 1.0 = 1%).
+            baseBillingCategory:
+              allOf:
+                - $ref: '#/components/schemas/BillingCategory'
+              description: Base billing category to which the percentage applies.
+            shipmentLevel:
+              type: boolean
+              description: True if the price applies at shipment level.
+          required: [ percentage, baseBillingCategory ]
+
+    NoAmountPriceInformation:
+      allOf:
+        - $ref: '#/components/schemas/PriceInformationBase'
+        - type: object
+          description: No amount present.
+
+    ChargeableWeightRatio:
+      type: object
+      description: Defines the ratio for chargeable weight calculation for Transport Modes Air, Road and KEP
+      properties:
+        type:
+          type: string
+          enum: [AIR, ROAD, KEP]
+        ratio:
+          type: number
+          description: Ratio as double value.
+      required: [type, ratio]
+
+    ExchangeRate:
+      type: object
+      description: Defines an exchange rate for a foreign currency (in reference to the contract currency)
+      properties:
+        rate:
+          type: number
+          description: The exchange rate as double
+        currency:
+          $ref: '#/components/schemas/Currency'
+      required: [rate, currency]
+
+    TransitTimeInformation:
+      type: object
+      description: Defines the transit time for a base rate
+      properties:
+        type:
+          type: string
+          enum: [DAYS, HOURS, MINUTES]
+        transitTime:
+          type: number
+          description: Transit time as double value
+      required: [type, transitTime]
+
+    FrequencyInformation:
+      type: object
+      description: Defines the frequency of transport for a base rate
+      properties:
+        type:
+          type: string
+          enum: [ PER_DAY, PER_WEEK, PER_MONTH, PER_YEAR ]
+        frequency:
+          type: number
+          description: Frequency as double value
+      required: [type, frequency]
+
+    AcceptRejectInformation:
+      type: object
+      description: Contains additional information about date and user of acceptation/rejection
+      properties:
+        date:
+          type: string
+          format: date
+          description: Date of the acceptation/rejection
+        person:
+          $ref: '#/components/schemas/Person'
+        reason:
+          type: string
+          description: Rejection reason as text if available.
+
+    AdditionalContractInformation:
+      type: object
+      description: Additional information for contracts about combinability
+      properties:
+        notCombinable:
+          type: boolean
+        notCombinableWithGeneral:
+          type: boolean
+        notCombineWithOther:
+          type: boolean
+
+    Contract:
+      type: object
+      description: >
+        Base type for contracts. The `type` is set server-side and indicates 
+        the specific contract subtype.
+      properties:
+        type:
+          type: string
+          readOnly: true
+          description: Contract type (e.g., QUOTE_ADHOC, QUOTE_GENERAL). Not required, will be set automatically.
+        number:
+          type: string
+          description: Unique contract or quotation number.
+        validFrom:
+          type: string
+          format: date
+          description: Contract validity start date (yyyy-MM-dd).
+        validTo:
+          type: string
+          format: date
+          description: Contract validity end date (yyyy-MM-dd).
+        chargeableWeightRatios:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChargeableWeightRatio'
+        exchangeRates:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExchangeRate'
+        rates:
+          type: array
+          description: At least one rate is required.
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/RateCreate'
+      required:
+        - number
+        - validFrom
+        - validTo
+        - rates
+
+    Quotation:
+      allOf:
+        - $ref: '#/components/schemas/Contract'
+        - type: object
+          description: >
+            Base type for quotations. Extends `Contract` with quotation-specific fields.
+          properties:
+            customer:
+              allOf:
+                - $ref: '#/components/schemas/Company'
+              description: Company this quotation is created for.
+            responsibleSalesPerson:
+              allOf:
+                - $ref: '#/components/schemas/Person'
+              description:
+                System user that is responsible for handling this quotation.
+            issuedDate:
+              type: string
+              description: Quotation issue date.
+            quotationValidToDate:
+              type: string
+              description: Date until which the quotation is valid.
+            status:
+              type: string
+              description: Quotation status.
+              enum: [ OPEN, CLOSED, ACCEPTED, REJECTED ]
+            acceptRejectInformation:
+              $ref: '#/components/schemas/AcceptRejectInformation'
+            remarks:
+              type: string
+              description: Free-text remarks.
+            language:
+              $ref: '#/components/schemas/Language'
+            currency:
+              $ref: '#/components/schemas/Currency'
+            paymentTerm:
+              $ref: '#/components/schemas/PaymentTerm'
+          required:
+            - customer
+            - status
+
+    AdhocQuotation:
+      allOf:
+        - $ref: '#/components/schemas/Quotation'
+        - type: object
+          description: >
+            An ad-hoc quotation. Contains shipment information in addition to 
+            standard quotation fields.
+          properties:
+            shipmentInformation:
+              $ref: '#/components/schemas/AdhocShipmentInformation'
+          required:
+            - shipmentInformation
+
+    GeneralQuotation:
+      allOf:
+        - $ref: '#/components/schemas/Quotation'
+        - type: object
+          description: >
+            A general quotation. Contains general shipment information in addition to
+            standard quotation fields.
+          properties:
+            contractInformation:
+              $ref: '#/components/schemas/AdditionalContractInformation'
+            shipmentInformation:
+              $ref: '#/components/schemas/GeneralShipmentInformation'
+          required:
+            - shipmentInformation
+
+    # ---------- ShipmentInformation hierarchy ----------
+    ShipmentInformation:
+      description: Sealed shipment information hierarchy.
+      oneOf:
+        - $ref: '#/components/schemas/AdhocShipmentInformation'
+        - $ref: '#/components/schemas/GeneralShipmentInformation'
+
+    AdhocShipmentInformation:
+      type: object
+      description: Shipment information for ad-hoc quotations.
+      properties:
+        routingInformation:
+          allOf:
+            - $ref: '#/components/schemas/AdhocRoutingInformation'
+          description: Detailed routing including destination, legs, and optional incoterms/depot codes.
+        collis:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ColliForCreate'
+          description: Shipment collis (packages). At least one is required.
+        shipmentConditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Condition'
+          description: Optional shipment-level conditions.
+        optionalCharges:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillingCategory'
+          description: Optional charge codes that may be added to the quotation.
+      required:
+        - routingInformation
+        - collis
+
+    GeneralShipmentInformation:
+      type: object
+      description: Shipment information for general quotations.
+      properties:
+        routingInformation:
+          allOf:
+            - $ref: '#/components/schemas/GeneralRoutingInformation'
+          description: General routing context (direction/mode); no legs or destination required.
+      required:
+        - routingInformation
+
+    # ---------- RoutingInformation hierarchy ----------
+    RoutingDirection:
+      type: string
+      description: Overall direction of the routing.
+      enum: [ IMPORT, EXPORT ]
+
+    RoutingInformation:
+      type: object
+      description: Base routing information (abstract).
+      properties:
+        routingDirection:
+          $ref: '#/components/schemas/RoutingDirection'
+        transportMode:
+          $ref: '#/components/schemas/TransportMode'
+      required:
+        - routingDirection
+        - transportMode
+
+    AdhocRoutingInformation:
+      allOf:
+        - $ref: '#/components/schemas/RoutingInformation'
+        - type: object
+          description: Routing details for ad-hoc quotations.
+          properties:
+            destination:
+              description: Destination location.
+              oneOf:
+                - $ref: '#/components/schemas/SeaportLocationForRouting'
+                - $ref: '#/components/schemas/AirportLocationForRouting'
+                - $ref: '#/components/schemas/RailstationLocationForRouting'
+                - $ref: '#/components/schemas/CityLocationForRouting'
+                - $ref: '#/components/schemas/PostalCodeLocationForRouting'
+                - $ref: '#/components/schemas/UnCityLocationForRouting'
+            legs:
+              type: array
+              minItems: 1
+              description: Transport legs from origin through to destination.
+              items:
+                $ref: '#/components/schemas/AdhocLeg'
+            originIncoterm:
+              allOf:
+                - $ref: '#/components/schemas/IncotermInfo'
+              description: Optional incoterm to refine pickup/hand-over at origin.
+            destinationIncoterm:
+              allOf:
+                - $ref: '#/components/schemas/IncotermInfo'
+              description: Optional incoterm to refine delivery/hand-over at destination.
+            originDepot:
+              allOf:
+                - $ref: '#/components/schemas/Company'
+              description: Company/depot at origin used for operational context (optional).
+            destinationDepot:
+              allOf:
+                - $ref: '#/components/schemas/Company'
+              description: Company/depot at destination used for operational context (optional).
+          required:
+            - destination
+            - legs
+
+    GeneralRoutingInformation:
+      allOf:
+        - $ref: '#/components/schemas/RoutingInformation'
+        - type: object
+          description: >
+            General routing information (no additional fields beyond the base).
+
+    Equipment:
+      type: object
+      description:
+        Type of equipment.
+      properties:
+        code:
+          type: string
+          description: System code for specified equipment.
+        name:
+          type: string
+          description: Human readable name for specified equipment.
+      required:
+        - code
+
+    BillingCategory:
+      type: object
+      description:
+        Type of billing category.
+      properties:
+        code:
+          type: string
+          description: System code for specified billing category.
+        name:
+          type: string
+          description: Human readable name for specified billing category.
+        site:
+          type: string
+          enum: [ ORIGIN, DESTINATION ]
+          description: Required when `rateType` is `SIDELETTER`.
+        transportMode:
+          allOf:
+            - $ref: '#/components/schemas/TransportMode'
+          description: Required for included billing categories.
+      required:
+        - code
+
+    CalculationBase:
+      type: object
+      description:
+        Type of calculation base. (e.g., `equipment`, `shipment`)
+      properties:
+        code:
+          type: string
+          description: System code for specified calculation base.
+        name:
+          type: string
+          description: Human readable name for specified calculation base.
+      required:
+        - code
+
+    Language:
+      type: object
+      description:
+        Language.
+      properties:
+        code:
+          type: string
+          description: System code for specified language according to ISO 639-1:2002 (e.g., `en`, `de`).
+      required:
+        - code
+
+    Currency:
+      type: object
+      description:
+        Type of currency.
+      properties:
+        code:
+          type: string
+          description: Currency ISO code (ISO-4217).
+      required:
+        - code
+
+    PaymentTerm:
+      type: object
+      description:
+        Type of payment term.
+      properties:
+        code:
+          type: string
+          description: System code for specified payment term.
+      required:
+        - code
+
+    ContractCreationResponse:
+      type: object
+      properties:
+        number:
+          type: string
+          description: The number of the created contract/quotation
+        creationResult:
+          type: string
+          description: Will be "Success" on successful creation
+        calculationResult:
+          type: string
+          description: Returns whether the created Adhoc quotation will show a calculated price in ECM.One of "Success", "No rates found", "Ambiguous result"
+        glaId:
+          type: number
+          description: Internal ID of the created contract
+
+    CalculationBasesResponse:
+      type: object
+      properties:
+        calculationBases:
+          type: array
+          items:
+            $ref: '#/components/schemas/CalculationBaseResponse'
+
+    CalculationBaseResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Unique code identifying the calculation base.
+        name:
+          type: string
+          description: Descriptive name of the calculation base.
+      example:
+        code: "container"
+        name: "Equipment"
+
+    BillingCategoriesResponse:
+      type: object
+      properties:
+        billingCategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillingCategoryResponse'
+
+    BillingCategoryResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Unique code identifying the billing category.
+        name:
+          type: string
+          description: Descriptive name of the billing category.
+        transportMode:
+          type: string
+          description: Transport mode (e.g. SEA, AIR, ROAD, RAIL, BARGE, KEP).
+        rateType:
+          type: string
+          description: Type of rate (e.g. Rate, Surcharge, Sideletter).
+      example:
+        code: "EIS"
+        name: "EQ Imbalance Surcharge"
+        transportMode: "SEA"
+        rateType: "Surcharge"
+
+    SuggestLocationsRequest:
+      type: object
+      properties:
+        suggestInput:
+          type: string
+          description: The text input used for location suggestions.
+          example: "Hamb"
+        types:
+          type: array
+          description: Restrict suggestions to specific location types.
+          items:
+            $ref: '#/components/schemas/SuggestLocationType'
+        countryIsoCode:
+          type: string
+          description: Optional ISO country code filter.
+          example: "DE"
+      required:
+        - suggestInput
+
+    SuggestLocationType:
+      type: string
+      description: Type of location to suggest.
+      enum: [ SEAPORT, AIRPORT, RAILSTATION, CITY, POSTAL_CODE ]
+
+    SuggestLocationsResponse:
+      type: object
+      properties:
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Location'
+      xml:
+        name: suggestLocationsResponse
+
+    AddressesResponse:
+      type: object
+      properties:
+        addresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/AddressResponse'
+
+    AddressResponse:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the referenced company.
+        code:
+          type: string
+          description: Code the company address is referenced by.
+      example:
+        name: "Example Customer"
+        code: "C1000"
+
+    PackageTypesResponse:
+      type: object
+      properties:
+        packageTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/PackageTypeResponse'
+
+    PackageTypeResponse:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Descriptive name of the package type.
+        colliType:
+          type: string
+          description: Load type (e.g. FULL, LESS).
+        companyCode:
+          type: string
+          description: Code that is specified for this package type for the user company.
+        domainCode:
+          type: string
+          description: Global code for this package type (e.g. ISO or UN Code)
+      example:
+        name: "20' Container"
+        colliType: "FULL"
+        companyCode: "C2"
+        domainCode: "22G0"
+
+    PlainValidationError:
+      type: string
+      description: |
+        Legacy plain-text validation error in four lines:
+        1) category
+        2) property path
+        3) message
+        4) rejected value.
+      example: |-
+        [PARAMETER]
+        [findRates.arg0.dateRangeBegin]
+        [must match yyyy-MM-dd]
+        [2025-0-07]
+
+    BadRequestError:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Human-readable error message describing why the request failed.
+        http_status:
+          type: integer
+          example: 400
+          description: Numeric HTTP status code.
+        http_status_reason_phrase:
+          type: string
+          example: Bad Request
+          description: Reason phrase corresponding to the HTTP status code.
+        error_location:
+          $ref: '#/components/schemas/ErrorLocation'
+
+    ErrorLocation:
+      type: object
+      description: Location of the error in the request body. Depending on context may contain line/column or a path.
+      properties:
+        line:
+          type: integer
+          nullable: true
+          description: Line number in the request payload (if available).
+          example: 2
+        column:
+          type: integer
+          nullable: true
+          description: Column number in the request payload (if available).
+          example: 13
+        path:
+          type: string
+          nullable: true
+          description: Path to the field that caused the validation error.
+          example: findRates.arg0.dateRangeEnd
+
+  examples:
+    EnumDeserializationError:
+      summary: Invalid enum value (Jackson deserialization)
+      value:
+        message: "Cannot deserialize value of type `QueryMode` from String \"buying\": not one of the values accepted for Enum class: [SELLING, BUYING]"
+        http_status: 400
+        http_status_reason_phrase: Bad Request
+        error_location:
+          line: 2
+          column: 13
+
+    ValidationError:
+      summary: Bean Validation failure (@NotNull)
+      value:
+        message: "dateRangeBegin is required"
+        http_status: 400
+        http_status_reason_phrase: Bad Request
+        error_location:
+          line: 0
+          column: 0
+          path: "findRates.arg0.dateRangeBegin"
+
+    CompanyError:
+      summary: Company Validation failure (Code not found)
+      value:
+        message: "could not find company with code A1000"
+        http_status: 400
+        http_status_reason_phrase: Bad Request
+        error_location:
+          line: 0
+          column: 0
+          path: "findRates.arg0.originDepot.code"
+
+    RateSearchExample:
+      summary: Example rate search request
+      value:
+        mode: BUYING
+        normCurrency: { code: "EUR" }
+        dateRangeBegin: "2025-09-01"
+        dateRangeEnd: "2025-09-30"
+        originDepot:
+          code: "A2000"
+        destinationDepot:
+          code: "A4000"
+        originIncoterm:
+          code: FOB
+          location:
+            code: DEHAM
+            type: SEAPORT
+          useAddressLocation: false
+        destinationIncoterm:
+          code: CIF
+          location:
+            code: CNSHA
+            type: SEAPORT
+          useAddressLocation: true
+        legs:
+          - origin: # Point origin example
+              type: CITY
+              country: DE
+              name: Hamburg
+            transportModes: [ ROAD ]
+          - origin: # Port origin example
+              code: DEHAM
+              type: SEAPORT
+            transportModes: [ SEA ]
+            serviceTypes:
+              - transportMode: SEA
+                code: FCL
+            carriers:
+              - transportMode: SEA
+                company:
+                  code: "A2002"
+        destination:
+          type: UN_CITY
+          code: CNSHA
+        collis:
+          - name: "20ft Container"
+            colliType: FULL
+            quantity: 2
+            equipmentType: "22G1"
+            conditions:
+              - key: "dangerousGood"
+                conditionType: YESNO
+                value: true
+          - name: "Euro Palette"
+            colliType: LESS
+            quantity: 10
+            equipmentType: "PE"
+            conditions:
+              - key: "weight"
+                conditionType: NUMERIC
+                value: 150
+                qualifier: "kg"
+
+    RateSearchResponseExample:
+      summary: Example rate search response
+      value:
+        metaData:
+          status: OK
+          infos: [ "Search completed" ]
+          warnings: [ ]
+          errors: [ ]
+          timeStampStart: 1694947200000
+          timeStampEnd: 1694947201234
+          resultSize: 1
+          queryId: 987654321
+        results:
+          - validFrom: "2025-09-01"
+            validTo: "2025-09-30"
+            legs:
+              - transportMode: SEA
+                routing:
+                  - { code: DEHAM, type: SEAPORT }
+                  - { type: CITY, country: CN, name: Shanghai, code: CNSHA }
+                transitTime: 32
+                rates:
+                  - rateType: RATE
+                    transportMode: SEA
+                    billingCategory: { code: "BASIS" }
+                    includedBillingCategories: [ { code: "BAF" } ]
+                    validFromDate: "2025-09-01"
+                    validToDate: "2025-09-30"
+                    routing:
+                      - { code: DEHAM, type: SEAPORT, routingType: MAIN_ORIGIN }
+                      - { type: CITY, country: CN, name: Shanghai, code: CNSHA, routingType: MAIN_DESTINATION }
+                    equipmentType: { code: "22G1" }
+                    carrier: { code: "A2002" }
+                    serviceType: { transportMode: SEA, code: "FCL" }
+                    ranking: CORE
+                    remark: "Direct service"
+                    conditions:
+                      - key: "dangerousGood"
+                        conditionType: YESNO
+                        value: false
+                    priceInformation:
+                      type: CURRENCY
+                      shipmentLevel: false
+                      amount: 1250.0
+                      normAmount: 1459.3
+                      currency: { code: "EUR" }
+                      calculationFactor: 1.0
+                      calculationBase: { code: "equipment" }
+                    priceSumInformation:
+                      currency: { code: "EUR" }
+                      normCurrency: { code: "USD" }
+                      amountSum: 1250.0
+                      normAmountSum: 1459.3
+                      factor: 1.0
+                      missingConditions: [ ]
+                      colliId: "22G1"
+                    contractInformation:
+                      contractNumber: "CON-2025-001"
+                      owner:
+                        code: "A2002"
+                      holder:
+                        code: "A1000"
+                  - rateType: SIDELETTER
+                    transportMode: SEA
+                    billingCategory: { code: "THC" }
+                    validFromDate: "2025-09-01"
+                    validToDate: "2025-09-15"
+                    site: ORIGIN
+                    priceInformation:
+                      type: PERCENTAGE
+                      shipmentLevel: false
+                      percentage: 10.0
+                      baseBillingCategory: { code: "BASIS" }
+                    priceSumInformation:
+                      currency: { code: "EUR" }
+                      normCurrency: { code: "USD" }
+                      amountSum: 12.50
+                      normAmountSum: 14.59
+                      factor: 1250.0
+                      missingConditions: [ ]
+                      colliId: "22G1"
+                    contractInformation:
+                      contractNumber: "CON-2025-001"
+                      owner:
+                        code: "A2002"
+                      holder:
+                        code: "A1000"
+
+    AdhocQuotationExample:
+      summary: Example ad-hoc quotation request
+      value:
+        number: "Q-2025-0001"
+        validFrom: "2025-10-01"
+        validTo: "2025-10-31"
+        customer:
+          code: "A1000"
+        status: "OPEN"
+        currency: { code: "EUR" }
+        shipmentInformation:
+          collis:
+            - colliType: FULL
+              name: "20ft Container"
+              equipmentType: "22G1"
+              marks: "BLUE/ACME"
+              description: "FCL — consumer electronics"
+              conditions:
+                - key: dangerousGood
+                  conditionType: YESNO
+                  value: false
+            - colliType: LESS
+              name: "Euro Pallet"
+              equipmentType: "PE"
+              quantity: 10
+              marks: "PAL-RED"
+              description: "Mixed cartons"
+          routingInformation:
+            routingDirection: EXPORT
+            transportMode: SEA
+            destination:
+              type: UN_CITY
+              group: POINT
+              code: CNSHA
+              routingType: MAIN_DESTINATION
+            legs:
+              - origin:
+                  type: SEAPORT
+                  group: PORT
+                  code: DEHAM
+                  routingType: MAIN_ORIGIN
+                transportModes: [ SEA ]
+                serviceTypes:
+                  - transportMode: SEA
+                    code: FCL
+                carriers:
+                  - transportMode: SEA
+                    company: { code: "A2002" }
+        rates:
+          - rateType: RATE
+            transportMode: SEA
+            billingCategory: { code: "BASIS" }
+            equipmentType: { code: "22G1" }
+            carrier: { code: "A2002" }
+            serviceType: { transportMode: SEA, code: "FCL" }
+            ranking: ADHOC
+            priceInformation:
+              type: CURRENCY
+              amount: 1200.0
+              currency: { code: "EUR" }
+              calculationBase: { code: "equipment" }
+              shipmentLevel: false
+          - rateType: SIDELETTER
+            site: ORIGIN
+            transportMode: SEA
+            billingCategory: { code: "THC" }
+            priceInformation:
+              type: PERCENTAGE
+              percentage: 1.0
+              baseBillingCategory: { code: "BASIS" }
+              shipmentLevel: false
+
+    GeneralQuotationExample:
+      summary: Example general quotation request
+      value:
+        number: "Q-2025-0100"
+        validFrom: "2025-11-01"
+        validTo: "2025-11-30"
+        customer:
+          code: "A1000"
+          name: "Alexander Logistics"
+        status: "OPEN"
+        currency: { code: "EUR" }
+        shipmentInformation:
+          routingInformation:
+            routingDirection: EXPORT
+            transportMode: SEA
+            # (Unlike ad-hoc, no destination/legs/incoterms/depot codes here)
+        rates:
+          - rateType: "RATE"
+            transportMode: "SEA"
+            billingCategory: { code: "BASIS" }
+            equipmentType: { code: "22G1" }
+            carrier: { code: "A2002" }
+            serviceType: { transportMode: SEA, code: "FCL" }
+            ranking: "ADHOC"
+            priceInformation:
+              type: "CURRENCY"
+              amount: 1100.0
+              currency: { code: "EUR" }
+              calculationBase: { code: "equipment" }
+              shipmentLevel: false
+          - rateType: "SURCHARGE"
+            transportMode: "SEA"
+            billingCategory: { code: "DOC" }
+            priceInformation:
+              type: "NO_AMOUNT"
