@@ -15,9 +15,7 @@ reunite:
 products:
   tms-api:
     name: CargoSoft TMS API
-    icon: images/platform-icon.svg
     folder: products/tms-api/
   ecm-api:
     name: CargoSoft ECM API
-    icon: images/mobile-icon.svg
     folder: products/ecm-api/
