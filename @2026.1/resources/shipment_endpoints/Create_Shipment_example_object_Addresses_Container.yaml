@@ -1,0 +1,97 @@
+value:
+  edipartner_matchcode: COCACOLA
+  client: DE4
+  direction: E
+  office: BRE
+  employees:
+    created_employee_matchcode: cargo
+  house_reference: WARENBESCHREIBUNG
+  bl_type: HBL
+  mode_of_transport: SEA
+  month_of_service: '202609'
+  goods:
+    - measurements: []
+      customs: []
+      mrns: []
+      subgoods:
+        - measurements: []
+          customs: []
+          mrns: []
+          subgoods: []
+          dangerousGoods: []
+          identifier: M
+          counter: 1
+          level: 2
+          level_number: 1000000
+          marks: []
+          quantity: 5
+          packaging_matchcode: PL
+          commodity_matchcode: '0077'
+          description:
+            - BIER
+          weight: 5800.0
+          colli: true
+          colli_number: 1
+          volume:
+          volume_unit: cbm
+          additional_mark: false
+          net_weight: 5000.0
+          weight_unit: k
+          chargable_weight:
+          container_number:
+          container: false
+          hs_codes: []
+        - measurements: []
+          customs: []
+          mrns: []
+          subgoods: []
+          dangerousGoods: []
+          identifier: M
+          counter: 2
+          level: 2
+          level_number: 1000000
+          marks: []
+          quantity: 5
+          packaging_matchcode: PL
+          commodity_matchcode: '0064'
+          description:
+            - BAUMWOLLE/-ABFAELLE
+          weight: 4900.0
+          colli: true
+          colli_number: 2
+          volume:
+          volume_unit: cbm
+          additional_mark: false
+          net_weight: 4450.0
+          weight_unit: k
+          chargable_weight:
+          container_number:
+          container: false
+          hs_codes: []
+      dangerousGoods: []
+      identifier: M
+      counter: 1
+      level: 1
+      level_number: 0
+      marks:
+        - MSKU 235 125-2
+      quantity: 1
+      packaging_matchcode: C2
+      commodity_matchcode:
+      description:
+        - SAID TO CONTAIN
+      weight: 12500.0
+      colli: true
+      colli_number: 1
+      volume:
+      volume_unit: cbm
+      additional_mark: false
+      net_weight: 10500.0
+      weight_unit: k
+      chargable_weight:
+      container_number: MSKU2351252
+      container: true
+      hs_codes: []
+  order_date_time: '2026-09-22T07:25:36'
+  maindepartment: HB
+  subdepartment: EX

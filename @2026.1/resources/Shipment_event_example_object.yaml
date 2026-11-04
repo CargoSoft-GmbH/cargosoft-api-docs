@@ -1,0 +1,15 @@
+value:
+ event: PICKUP
+ type: ACTUAL
+ shipment_id: 327410
+ date_time:
+   date: '2025-10-01'
+   time: '12:00:00'
+   zone_offset: "+02:00"
+ location:
+   codes:
+     - type: UNLOC
+       code: DEBRE
+   name: BREMEN
+   latitude:
+   longitude:

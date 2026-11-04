@@ -1,0 +1,15 @@
+organization: cargosoft-gmbh
+extends:
+  - recommended
+features.openapi:
+  maxDisplayedEnumValues: 3
+  generateCodeSamples:
+    languages:
+      - lang: curl
+        label: curl
+  theme:
+    menu:
+      backgroundColor: '#ff0000'
+    rightPanel:
+      textColor": '#ff0000'
+  corsProxyUrl: 'https://cors.redoc.ly/'

@@ -1,0 +1,277 @@
+value:
+  edipartner_matchcode: EDIPARTNER
+  client: DE4
+  direction: E
+  office: BRE
+  employees:
+    created_employee_matchcode: cargo
+  house_reference: '20260901102536'
+  bl_type: HBL
+  mode_of_transport: SEA
+  month_of_service: '202609'
+  goods:
+    - measurements: []
+      customs: []
+      mrns: []
+      subgoods: []
+      dangerousGoods: []
+      identifier: M
+      counter: 1
+      level: 1
+      level_number: 0
+      marks: []
+      quantity: 5
+      packaging_matchcode: PL
+      commodity_matchcode: '0077'
+      description:
+        - BIER
+      weight: 5500.0
+      colli: true
+      colli_number: 1
+      volume:
+      volume_unit: cbm
+      additional_mark: false
+      net_weight: 4500.0
+      weight_unit: k
+      chargable_weight:
+      container_number:
+      container: false
+      hs_codes: []
+    - measurements: []
+      customs: []
+      mrns: []
+      subgoods: []
+      dangerousGoods: []
+      identifier: M
+      counter: 2
+      level: 1
+      level_number: 0
+      marks: []
+      quantity: 5
+      packaging_matchcode: KT
+      commodity_matchcode: '0061'
+      description:
+        - BATTERIEN
+      weight: 4800.0
+      colli: true
+      colli_number: 2
+      volume:
+      volume_unit: cbm
+      additional_mark: false
+      net_weight: 4300.0
+      weight_unit: k
+      chargable_weight:
+      container_number:
+      container: false
+      hs_codes: []
+  addresses:
+    - qualifier: SHP
+      address_type: G
+      address_number: 1
+      printed_address:
+        line_1: CargoSoft GmbH
+        line_2: Buschhöhe 10
+        line_3: 28359 Bremen
+        line_4: Deutschland
+        line_5:
+      street: Buschhöhe 10
+      postal_code: '28359'
+      city: Bremen
+      state:
+      country_matchcode: DE
+      un_location_code: DEBRE
+      contact:
+      references:
+        - matchcode:
+          value: ShipperRef
+          date_and_time:
+            date:
+            time:
+            zone_offset:
+    - qualifier: CNE
+      address_type: G
+      address_number: 2
+      printed_address:
+        line_1: AROY-D
+        line_2: 45/1-2 Phra Athit Rd, Chana Songkhram
+        line_3: 10200 Bangkok
+        line_4: THAILAND
+        line_5:
+      street: 45/1-2 Phra Athit Rd, Chana Songkhram
+      postal_code: '10200'
+      city: Bangkok
+      state:
+      country_matchcode: TH
+      un_location_code: THBKK
+      contact:
+      references:
+        - matchcode:
+          value: ConsigneeRef
+          date_and_time:
+            date:
+            time:
+            zone_offset:
+    - qualifier: NFY
+      address_type: G
+      address_number: 3
+      printed_address:
+        line_1: Thailand DES-Agent Bangkok
+        line_2: Trad Road Km 15 Rachathewa
+        line_3: 10540 Bangkok
+        line_4: THAILAND
+        line_5:
+      street: Trad Road Km 15 Rachathewa
+      postal_code: '10540'
+      city: Bangkok
+      state:
+      country_matchcode: TH
+      un_location_code: THBKK
+      contact:
+      references:
+        - matchcode:
+          value: NotifyRef
+          date_and_time:
+            date:
+            time:
+            zone_offset:
+    - qualifier: AGT
+      address_type: G
+      address_number: 4
+      printed_address:
+        line_1: Thailand DES-Agent Surat Thani
+        line_2: Hua Toei, Amphoe Phunphin
+        line_3: 10545 Surat Thani
+        line_4: THAILAND
+        line_5:
+      street: Hua Toei, Amphoe Phunphin
+      postal_code: '10545'
+      city: Surat Thani
+      state:
+      country_matchcode: TH
+      un_location_code: THURT
+      contact:
+      references:
+        - matchcode:
+          value: AgentRef
+          date_and_time:
+            date:
+            time:
+            zone_offset:
+    - qualifier: CAR
+      address_type: G
+      address_number: 5
+      printed_address:
+        line_1: Adresse für ADRESSVORSCHLAG
+        line_2: Adresse für ADRESSVORSCHLAG
+        line_3: Straßenname 123
+        line_4: 28359 Bremen
+        line_5: Deutschland
+      street: Straßenname 123
+      postal_code: '28359'
+      city: Bremen
+      state:
+      country_matchcode: DE
+      un_location_code: DEBRE
+      contact:
+      references:
+        - matchcode:
+          value: CarrierRef
+          date_and_time:
+            date:
+            time:
+            zone_offset:
+    - qualifier: TRA
+      address_type: G
+      address_number: 6
+      printed_address:
+        line_1: EKB Container Logistik GmbH & Co. KG
+        line_2: Container- und Frachtguttransporte
+        line_3: Richard-Dunkel-Straße 120
+        line_4: 28819 Bremen
+        line_5: Deutschland
+      street: Richard-Dunkel-Straße 120
+      postal_code: '28819'
+      city: Bremen
+      state:
+      country_matchcode: DE
+      un_location_code: DEBRE
+      contact:
+      references:
+        - matchcode:
+          value: TerminalInRef
+          date_and_time:
+            date:
+            time:
+            zone_offset:
+    - qualifier: TML
+      address_type: G
+      address_number: 7
+      printed_address:
+        line_1: Addicks & Kreye Container Service GmbH
+        line_2: Windhukstraße 20-26
+        line_3: 28237 Bremen
+        line_4: Deutschland
+        line_5:
+      street: Windhukstraße 20-26
+      postal_code: '28237'
+      city: Bremen
+      state:
+      country_matchcode: DE
+      un_location_code: DEBRE
+      contact:
+      references:
+        - matchcode:
+          value: TruckerRef
+          date_and_time:
+            date:
+            time:
+            zone_offset:
+    - qualifier: PUP
+      address_type: G
+      address_number: 8
+      printed_address:
+        line_1: AHS Bremen Aviation
+        line_2: Handling Services GmbH
+        line_3: Terminal 1, Flughafenallee 21
+        line_4: 28199 Bremen
+        line_5: Deutschland
+      street: Terminal 1, Flughafenallee 21
+      postal_code: '28199'
+      city: Bremen
+      state:
+      country_matchcode: DE
+      un_location_code: DEBRE
+      contact:
+      references:
+        - matchcode:
+          value: TerminalOutRef
+          date_and_time:
+            date:
+            time:
+            zone_offset:
+    - qualifier: CSTOP
+      address_type: G
+      address_number: 9
+      printed_address:
+        line_1: Miscellaneous GmbH & Co KG
+        line_2: Sonstige Güter
+        line_3: Am Wall 207
+        line_4: 28195 Bremen
+        line_5: Deutschland
+      street: Am Wall 207
+      postal_code: '28195'
+      city: Bremen
+      state:
+      country_matchcode: DE
+      un_location_code: DEBRE
+      contact:
+      references:
+        - matchcode:
+          value: TerminalAdresse9Ref
+          date_and_time:
+            date:
+            time:
+            zone_offset:
+  order_date_time: '2026-09-22T07:25:36'
+  maindepartment: HB
+  subdepartment: EX

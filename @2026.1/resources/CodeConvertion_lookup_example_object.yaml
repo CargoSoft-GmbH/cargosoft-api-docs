@@ -1,0 +1,8 @@
+value:
+  - id: 4711
+    client: '001'
+    edipartner: SAMPLEPARTNER
+    direction: RECEIVE
+    code_type: VERCO_T
+    source_code: BX
+    target_code: '10'

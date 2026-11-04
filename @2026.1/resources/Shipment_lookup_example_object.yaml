@@ -1,0 +1,690 @@
+value:
+  id: 327410
+  client: '001'
+  direction: E
+  office: BRE
+  employees:
+    closed_employee_matchcode:
+    last_modified_employee_matchcode: cargo
+    created_employee_matchcode: cargo
+    responsible_employee_matchcode: cargo
+  memos: []
+  aes: []
+  shipment_number: '0111230300003'
+  master_reference:
+  house_reference: '0111230300003'
+  bl_type: HBL
+  mode_of_transport: SEA
+  month_of_service: '202402'
+  total_packages: 1
+  total_gross_weight: 1
+  self_pickup: "N"
+  self_delivery: "N"
+  goods: []
+  addresses:
+    - qualifier: AGT
+      address_type: G
+      address_number: 909524
+      printed_address:
+        line_1: Daniel Turkoane
+        line_2: Faktorsgatan 5
+        line_3:
+        line_4: S 25246 Helsingborg
+        line_5:
+      street: Faktorsgatan 5
+      postal_code: '25246'
+      city: Helsingborg
+      state:
+      country_matchcode: SE
+      un_location_code:
+      contact:
+      references: []
+    - qualifier: CAR
+      address_type: G
+      address_number: 8923
+      printed_address:
+        line_1: Jumbo Transport A/S
+        line_2: Lokesvej 8
+        line_3:
+        line_4: DK 8230 ABYHOJ
+        line_5:
+      street: Lokesvej 8
+      postal_code: '8230'
+      city: ABYHOJ
+      state:
+      country_matchcode: DK
+      un_location_code:
+      contact:
+      references: []
+    - qualifier: CNE
+      address_type: D
+      address_number: 1030
+      printed_address:
+        line_1: Max Mustermann
+        line_2: Hollywood Blvd.
+        line_3: 90245 Los Angeles
+        line_4:
+        line_5:
+      street: Hollywood Blvd.
+      postal_code: '90245'
+      city: Los Angeles
+      state:
+      country_matchcode: US
+      un_location_code: USLAX
+      contact:
+      references: []
+    - qualifier: CUS
+      address_type: K
+      address_number: 111111
+      printed_address:
+        line_1: MAERSK
+        line_2:
+        line_3: HAMBURG
+        line_4:
+        line_5:
+      street:
+      postal_code:
+      city: HAMBURG
+      state:
+      country_matchcode: DE
+      un_location_code:
+      contact:
+      references: []
+    - qualifier: PUP
+      address_type: D
+      address_number: 1030
+      printed_address:
+        line_1: Max Mustermann
+        line_2: Hollywood Blvd.
+        line_3: 90245 Los Angeles
+        line_4:
+        line_5:
+      street: Hollywood Blvd.
+      postal_code: '90245'
+      city: Los Angeles
+      state:
+      country_matchcode: US
+      un_location_code: USLAX
+      contact:
+      references: []
+    - qualifier: SHP
+      address_type: D
+      address_number: 1030
+      printed_address:
+        line_1: CargoSoft GmbH1 e-logistic solutions inf
+        line_2: Bremen 28199 28357 Postfach POST4711 HB
+        line_3: D Buschhöhe 10a +49 (421) 122-225-444
+        line_4: "+49 (421) 122-225-288 etr j765j655ju u65"
+        line_5: DE DE987654321 nicht !1ss cscs
+      street: Buschhöhe 10a
+      postal_code: '28357'
+      city: Bremen
+      state:
+      country_matchcode: DE
+      un_location_code: DEBRE
+      contact:
+      references:
+        - id: 10182
+          matchcode: DEF
+          value: Testreferenz 123
+          date_and_time:
+            date:
+            time:
+            zone_offset:
+    - qualifier: CARRIER
+      address_type: K
+      address_number: 111111
+      printed_address:
+      street:
+      postal_code:
+      city:
+      state:
+      country_matchcode:
+      un_location_code:
+      contact:
+      references: []
+  pre_carriage:
+    carriage_legs:
+      - mot: ANY
+        origin:
+          location:
+            codes:
+              - type: UNLOC
+                code: DEHAM
+            name: Bremen
+            latitude:
+            longitude:
+          estimated_datetime:
+            date: '2023-03-05'
+            time: '10:00:00'
+            zone_offset: "+02:00"
+          actual_datetime:
+            date: '2025-11-01'
+            time:
+            zone_offset:
+          revised_datetime:
+          estimated_datetime_until:
+        destination:
+          location:
+            codes:
+              - type: UNLOC
+                code: DEBRV
+            name: Bremerhaven
+            latitude:
+            longitude:
+          estimated_datetime:
+            date: '2023-03-06'
+            time: '10:00:00'
+            zone_offset: "+02:00"
+          actual_datetime:
+            date: '2023-03-06'
+            time: '11:00:00'
+            zone_offset: "+02:00"
+          revised_datetime:
+          estimated_datetime_until:
+        leg_no: 1
+        haulage_type:
+        haulage_reference:
+  main_carriage:
+    carriage_legs:
+      - mot: SEA
+        origin:
+          location:
+            codes:
+              - type: UNLOC
+                code: DEBRV
+            name: Bremerhaven
+            latitude:
+            longitude:
+          estimated_datetime:
+            date: '2023-03-06'
+            time: '10:00:00'
+            zone_offset: "+02:00"
+          actual_datetime:
+            date: '2023-03-06'
+            time: '11:00:00'
+            zone_offset: "+02:00"
+          revised_datetime:
+          estimated_datetime_until:
+        destination:
+          location:
+            codes:
+              - type: UNLOC
+                code: NLRTM
+            name: Rotterdam
+            latitude:
+            longitude:
+          estimated_datetime:
+            date: '2023-03-06'
+            time: '19:00:00'
+            zone_offset: "+02:00"
+          actual_datetime:
+            date: '2023-03-06'
+            time: '20:00:00'
+            zone_offset: "+02:00"
+          revised_datetime:
+          estimated_datetime_until:
+        leg_no: 1
+        voyage_no:
+        imo_code:
+        vessel_name:
+        vessel_flag:
+        call_sign:
+  post_carriage:
+    carriage_legs:
+      - mot: ANY
+        origin:
+          location:
+            codes:
+              - type: UNLOC
+                code: NLRTM
+            name: Rotterdam
+            latitude:
+            longitude:
+          estimated_datetime:
+            date: '2023-03-06'
+            time: '19:00:00'
+            zone_offset: "+02:00"
+          actual_datetime:
+            date: '2023-03-06'
+            time: '20:00:00'
+            zone_offset: "+02:00"
+          revised_datetime:
+          estimated_datetime_until:
+        destination:
+          location:
+            codes:
+              - type: UNLOC
+                code: NLAMS
+            name: Amsterdam
+            latitude:
+            longitude:
+          estimated_datetime:
+            date: '2023-03-07'
+            time: '15:00:00'
+            zone_offset: "+02:00"
+          actual_datetime:
+            date: '2023-03-07'
+            time: '16:00:00'
+            zone_offset: "+02:00"
+          revised_datetime:
+          estimated_datetime_until:
+        leg_no: 1
+        haulage_type:
+        haulage_reference:
+  events:
+    - event: PICKUP
+      type: ACTUAL
+      shipment_id: 327410
+      date_time:
+        date: '2025-11-01'
+        time:
+        zone_offset:
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: DEHAM
+        name: Bremen
+        latitude:
+        longitude:
+    - event: PICKUP
+      type: ESTIMATED
+      shipment_id: 327410
+      date_time:
+        date: '2023-03-05'
+        time: '10:00:00'
+        zone_offset: "+02:00"
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: DEHAM
+        name: Bremen
+        latitude:
+        longitude:
+    - event: POL_ARRIVAL
+      type: ACTUAL
+      shipment_id: 327410
+      date_time:
+        date: '2023-03-05'
+        time: '16:00:00'
+        zone_offset: "+02:00"
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: DEBRV
+        name: Bremerhaven
+        latitude:
+        longitude:
+    - event: POL_ARRIVAL
+      type: ESTIMATED
+      shipment_id: 327410
+      date_time:
+        date: '2023-03-05'
+        time: '15:00:00'
+        zone_offset: "+02:00"
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: DEBRV
+        name: Bremerhaven
+        latitude:
+        longitude:
+    - event: LOADING_START
+      type: ACTUAL
+      shipment_id: 327410
+      date_time:
+        date:
+        time:
+        zone_offset:
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: DEBRV
+        name: Bremerhaven
+        latitude:
+        longitude:
+    - event: LOADING_START
+      type: ESTIMATED
+      shipment_id: 327410
+      date_time:
+        date:
+        time:
+        zone_offset:
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: DEBRV
+        name: Bremerhaven
+        latitude:
+        longitude:
+    - event: LOADING_END
+      type: ACTUAL
+      shipment_id: 327410
+      date_time:
+        date:
+        time:
+        zone_offset:
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: DEBRV
+        name: Bremerhaven
+        latitude:
+        longitude:
+    - event: LOADING_END
+      type: ESTIMATED
+      shipment_id: 327410
+      date_time:
+        date:
+        time:
+        zone_offset:
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: DEBRV
+        name: Bremerhaven
+        latitude:
+        longitude:
+    - event: POL_DEPARTURE
+      type: ACTUAL
+      shipment_id: 327410
+      date_time:
+        date: '2023-03-06'
+        time: '11:00:00'
+        zone_offset: "+02:00"
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: DEBRV
+        name: Bremerhaven
+        latitude:
+        longitude:
+    - event: POL_DEPARTURE
+      type: ESTIMATED
+      shipment_id: 327410
+      date_time:
+        date: '2023-03-06'
+        time: '10:00:00'
+        zone_offset: "+02:00"
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: DEBRV
+        name: Bremerhaven
+        latitude:
+        longitude:
+    - event: POD_ARRIVAL
+      type: ACTUAL
+      shipment_id: 327410
+      date_time:
+        date: '2023-03-06'
+        time: '20:00:00'
+        zone_offset: "+02:00"
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: NLRTM
+        name: Rotterdam
+        latitude:
+        longitude:
+    - event: POD_ARRIVAL
+      type: ESTIMATED
+      shipment_id: 327410
+      date_time:
+        date: '2023-03-06'
+        time: '19:00:00'
+        zone_offset: "+02:00"
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: NLRTM
+        name: Rotterdam
+        latitude:
+        longitude:
+    - event: CLEARANCE_START
+      type: ACTUAL
+      shipment_id: 327410
+      date_time:
+        date: '2023-03-06'
+        time: '21:00:00'
+        zone_offset: "+02:00"
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: NLRTM
+        name: Rotterdam
+        latitude:
+        longitude:
+    - event: CLEARANCE_START
+      type: ESTIMATED
+      shipment_id: 327410
+      date_time:
+        date: '2023-03-06'
+        time: '20:00:00'
+        zone_offset: "+02:00"
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: NLRTM
+        name: Rotterdam
+        latitude:
+        longitude:
+    - event: CLEARANCE_END
+      type: ACTUAL
+      shipment_id: 327410
+      date_time:
+        date: '2023-03-06'
+        time: '22:00:00'
+        zone_offset: "+02:00"
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: NLRTM
+        name: Rotterdam
+        latitude:
+        longitude:
+    - event: CLEARANCE_END
+      type: ESTIMATED
+      shipment_id: 327410
+      date_time:
+        date: '2023-03-06'
+        time: '21:00:00'
+        zone_offset: "+02:00"
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: NLRTM
+        name: Rotterdam
+        latitude:
+        longitude:
+    - event: CUSTOMS_CLEARANCE
+      type: ACTUAL
+      shipment_id: 327410
+      date_time:
+        date:
+        time:
+        zone_offset:
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: NLRTM
+        name: Rotterdam
+        latitude:
+        longitude:
+    - event: CUSTOMS_CLEARANCE
+      type: ESTIMATED
+      shipment_id: 327410
+      date_time:
+        date:
+        time:
+        zone_offset:
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: NLRTM
+        name: Rotterdam
+        latitude:
+        longitude:
+    - event: AVAILABLE
+      type: ACTUAL
+      shipment_id: 327410
+      date_time:
+        date: '2023-03-07'
+        time: '09:00:00'
+        zone_offset: "+02:00"
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: NLRTM
+        name: Rotterdam
+        latitude:
+        longitude:
+    - event: AVAILABLE
+      type: ESTIMATED
+      shipment_id: 327410
+      date_time:
+        date: '2023-03-07'
+        time: '09:00:00'
+        zone_offset: "+02:00"
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: NLRTM
+        name: Rotterdam
+        latitude:
+        longitude:
+    - event: ACCEPTANCE
+      type: ACTUAL
+      shipment_id: 327410
+      date_time:
+        date:
+        time:
+        zone_offset:
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: NLRTM
+        name: Rotterdam
+        latitude:
+        longitude:
+    - event: ACCEPTANCE
+      type: ESTIMATED
+      shipment_id: 327410
+      date_time:
+        date:
+        time:
+        zone_offset:
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: NLRTM
+        name: Rotterdam
+        latitude:
+        longitude:
+    - event: FINAL_DESTINATION
+      type: ACTUAL
+      shipment_id: 327410
+      date_time:
+        date: '2023-03-07'
+        time: '16:00:00'
+        zone_offset: "+02:00"
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: NLAMS
+        name: Amsterdam
+        latitude:
+        longitude:
+    - event: FINAL_DESTINATION
+      type: ESTIMATED
+      shipment_id: 327410
+      date_time:
+        date: '2023-03-07'
+        time: '15:00:00'
+        zone_offset: "+02:00"
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: NLAMS
+        name: Amsterdam
+        latitude:
+        longitude:
+    - event: POL_DEPARTURE_REVISED
+      type: ESTIMATED
+      shipment_id: 327410
+      date_time:
+        date:
+        time:
+        zone_offset:
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: DEBRV
+        name: Bremerhaven
+        latitude:
+        longitude:
+    - event: POD_ARRIVAL_REVISED
+      type: ESTIMATED
+      shipment_id: 327410
+      date_time:
+        date:
+        time:
+        zone_offset:
+        until:
+      location:
+        codes:
+          - type: UNLOC
+            code: NLRTM
+        name: Rotterdam
+        latitude:
+        longitude:
+  terms_of_delivery_matchcode: FOB
+  terms_of_delivery_name: FOB Bremerhaven
+  total_volume: 1
+  chargeableWeight: 0
+  original_shipment_number: '33030'
+  foreign_id:
+  movement_matchcode:
+  insurance:
+    waiver_customer:
+    insurable_value:
+    insurable_value_currency_matchcode: EUR
+    value_of_goods:
+    value_of_goods_currency_matchcode: EUR
+    insurance_text:
+    transport_insurance: false
+    insurance_type:
+    insurer:
+  credit_data:
+  customs_data:
+  containers: []
+  custom_fields: []
+  last_modified_date_time: '2023-03-06T16:00:12'
+  created_date_time: '2023-03-06T16:00:12'
+  order_date_time: '2023-03-06T00:00:00'
+  project_matchcode:

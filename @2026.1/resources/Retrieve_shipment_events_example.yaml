@@ -1,0 +1,61 @@
+value:
+- event: "PICKUP"
+  type: "ACTUAL"
+  shipment_id: 318283
+  date_time:
+    date: "2023-01-21"
+    time: "13:00:00"
+    zone_offset: "+01:00"
+  location:
+    codes:
+      - type: "UNLOC"
+        code: "DEBRE"
+      - type: "CARGOSOFT"
+        code: "DEBRE"
+    name: "Bremen"
+    latitude: null
+    longitude: null
+- event: "PICKUP"
+  type: "ESTIMATED"
+  shipment_id: 318283
+  date_time:
+    date: "2023-01-21"
+    time: "09:00:00"
+    zone_offset: "+01:00"
+  location:
+    codes:
+      - type: "UNLOC"
+        code: "DEBRE"
+      - type: "CARGOSOFT"
+        code: "DEBRE"
+    name: "Bremen"
+    latitude: null
+    longitude: null
+- event: "POL_ARRIVAL"
+  type: "ACTUAL"
+  shipment_id: 318283
+  date_time:
+    date: "2023-01-23"
+    time: "11:00:00"
+    zone_offset: "+01:00"
+  location:
+    codes:
+      - type: "UNLOC"
+        code: "DEHAM"
+    name: "HAMBURG"
+    latitude: null
+    longitude: null
+- event: "POL_ARRIVAL"
+  type: "ESTIMATED"
+  shipment_id: 318283
+  date_time:
+    date: "2023-01-23"
+    time: "10:00:00"
+    zone_offset: "+01:00"
+  location:
+    codes:
+      - type: "UNLOC"
+        code: "DEHAM"
+    name: "HAMBURG"
+    latitude: null
+    longitude: null

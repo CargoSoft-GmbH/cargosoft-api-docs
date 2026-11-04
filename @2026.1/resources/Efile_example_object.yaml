@@ -1,0 +1,33 @@
+value:
+  - id: 117481
+    client: "001"
+    description: "A18 document"
+    bytes: "iVBORw0KGgoAAAANSUhEUgAAAgoAAAKlCAYAAACqi8RuAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABhaVRYdFNuaXBNZXRhZGF0YQAAAAAAeyJjbGlwUG9pbnRzIjpbeyJ4IjowLCJ5IjowfSx7IngiOjUyMiwieSI6MH0seyJ4Ijo1MjIsInkiOjY3N30seyJ4IjowLCJ5Ijo2Nzd9XX1rMyYmAAD/OElEQVR4XuT9B5xeV3XvD6/pvWtm1HuvtlzkirsxGGzTCb1DaAFCgHRCQuq9NzcJCUkooXcwGHds495k2bItS7J6HZXpvY/e33fts58582hGkgl53/f/+a9n1pxd1167rrXL2Sfnq49uPSGwiLm5uRkcGxuzqSAnJ0f/T+2feyKxJJCXk5tJBzghEqQDkFagOQ4xfdzBGC9COnz0w210dNSfkXaE7PgnYCAF2f6WF/gFTpwYtcK8fKdtOWOWl5cn5oM95tP5TJHIy8/xcMPDw5ZrOVZQUGAjIyNmoyH+CVPcpKxJhyc08INuYW7IS/QDYr4om/zcEA4zYaAP4OblcELldyLX8vMDnyPiDV4INzQ0ZIVFRW7Hn/h9fX1WVVXlT+dBHMIv4UmTsNCNaeQXlMh/KNAbHvC8V5SV2HB/nxXmF1jO8KgVFBbasNrJyJh4sjxPC5pFci8syrG248dsbkOjNVRX2g+//Q27/Zc329o1K+yv//qv7cRQn/PV3d0tfkL9Ex8YGRm2mtwiGxgZszG59Y8O2mjOkFVWliuVQivILbPOvk5ra26xTY89Yd/8ytfsfe94lz38wIPisdye3/ys1a+YbxdeeoV965vfs/WrV9ueHdtt+owGa+nuEb1cK8kZsRNjQ2q3Y1ZcWmGNc+bbpqeeseuuvsoO7NhmW1/pGgGLPjWsMYgfn6yXam47oHr2MpdtbTIjWCx/9iJ5kNjS3ZY3C2hC16e6DH8B16DsOn8Syf0nIN74CXBvbPHLF/j4Lr+98+A5/3ngzI5WY+c8Avug39RD9d4R+YR9wV10y7+DuoPyoE/8hvtoU4OeB99xuHaoq+OoF6en23r7PbJrDA/af8fqiSe3XAxiM0AAAAASUVORK5CYII="
+    roles:
+      - "cargosoft"
+      - "SCM"
+      - "C2C"
+    references:
+      - reference_type: "CSFILE"
+        reference_value: "022120300004#001"
+      - reference_type: "createdBy"
+        reference_value: "CargoSoft User"
+    document_category: 1601,
+    document_name: "A18.pdf"
+    document_date: "2024-01-17T10:51:48.001"
+  - id: 117482
+    client: "001"
+    description: "Description of this Screenshot"
+    bytes: "iVBORw0KGgoAAAANSUhEUgAAAgpGgGLPjWsMYg+XH2YTHVX5pDD4IqP9TKZmfKgneoZWrePCP8C9QWIQlvEbBD11fwky2HApEzHmQOwoC9Ec1KDLYj0qBwl6qWTRhiAt6noQu7GXP5EmAO/GweV3JX/+cz0BfzIu/PPHAigGrDkERYDtA8ZN46acP5PApOwBNZltOW4C5WIoQ/IjtUF9qIydUfuQDxWnYmK2yZcFMVPb+fis4oTIaG7L1a1baD77yH7Zjy3P2r//4v+3iC86TYtOnQXlEwrVbNazZonitrq6xgYGBTLrMBOGJ+hmRYM4vLJI+kmfFSu/PP/c5y1U5Xn7J5XbpRS+zBx+5357YuNEGpdTs3LvHlq5aYQ8+9rAtWLLfn6yXam47oHr2MpdtbTIjWCx/9iJ5kNjS3ZY3C2hC16e6DH8B16DsOn8Syf0nIN74CXBvbPHLF/j4Lr+98+A5/3ngzI5WY+c8Avug39RD9d4R+YR9wV10y7+DuoPyoE/8hvtoU4OeB99xuHaoq+OoF6en23r7PbJrDA/af8fqiSe3XAxiM0AAAAASUVORK5CYII="
+    roles:
+      - "cargosoft"
+      - "SCM"
+      - "C2C"
+    references:
+      - reference_type: "CSFILE"
+        reference_value: "022120300004#001"
+      - reference_type: "createdBy"
+        reference_value: "CargoSoft User"
+    document_category: 1601,
+    document_name: "Screenshot 2024-01-17 121503.png"
+    document_date: "2024-01-17T12:15:24.877"

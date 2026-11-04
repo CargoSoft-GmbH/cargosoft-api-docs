@@ -1,0 +1,7 @@
+value:
+  - match_mode: EQUALS
+    key: TABLE_NAME
+    value: eakopf_t
+  - match_mode: EQUALS
+    key: TABLE_ID
+    value: '4711'
