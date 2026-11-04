@@ -1,7 +1,0 @@
-value:
-  - match_mode: EQUALS
-    key: CLIENT
-    value: '001'
-  - match_mode: EQUALS
-    key: MATCHCODE
-    value: KT

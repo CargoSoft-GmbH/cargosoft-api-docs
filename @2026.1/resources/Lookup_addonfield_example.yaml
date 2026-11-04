@@ -1,4 +1,0 @@
-value:
-  - match_mode: EQUALS
-    key: FIELDNAME
-    value: CUSTOMS_REFERENCE

@@ -1,5 +1,0 @@
-value:
- event: PICKUP
- type: ACTUAL
- date_time:
-   date: '2025-10-01'
