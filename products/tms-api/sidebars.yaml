@@ -1,5 +1,2 @@
-- page: ./@2025.1/openapi.yaml
-  label: CargoSoft TMS API
-
 - page: ./@2026.1/openapi.yaml
   label: CargoSoft TMS API
