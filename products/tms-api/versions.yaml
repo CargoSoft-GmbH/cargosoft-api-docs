@@ -1,4 +1,4 @@
-default: 2024.2
+default: 2026.1
 versions:
   - version: 2025.1
   - version: 2026.1
