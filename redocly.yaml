@@ -19,3 +19,7 @@ products:
   ecm-api:
     name: CargoSoft ECM API
     folder: products/ecm-api/
+
+# Hide sidebar on landing pages
+sidebar:
+  hide: true
