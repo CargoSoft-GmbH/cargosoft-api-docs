@@ -192,6 +192,7 @@ The following use cases describe common integration workflows. Every request req
 | Goal | Primary endpoint | Result |
 |---|---|---|
 | Create a shipment | `POST /cargosoft/shipment` | A new shipment with its unique ID and CargoSoft shipment number |
+| Look up an EDI code conversion | `POST /cargosoft/basicdata/codeconverter/lookup` | Matching conversion records for the supplied identifiers |
 | Retrieve a shipment | `POST /cargosoft/shipment/lookup` | Matching shipments and their IDs |
 | Attach an E-File document | `POST /cargosoft/efile` | A stored document linked to an existing shipment |
 | Attach a status | `POST /cargosoft/status` | A provider status associated with an existing shipment |
@@ -214,6 +215,26 @@ Use [`POST /cargosoft/shipment`](#operation/createShipment).
 - The authenticated API username must match the matchcode of an EDI partner.
 - The shipment number definition, main department, and sub department must be resolvable from the
   [EDI partner settings](#CHAPTER_EDIPARTNER_SETTINGS) or the request body.
+
+<p id='CHAPTER_EDIPARTNER_SETTINGS'></p>
+
+**EDI partner settings**
+
+Generating a shipment number requires three pieces of information: the shipment number definition (posdef), the main
+department, and the sub department. Each value can be configured individually on the EDI partner determined from the
+authenticated API user. A configured EDI partner value takes precedence; an empty or blank value is treated as not
+configured. Each key is resolved independently, and unrelated qualifiers on the EDI partner are ignored.
+
+| Key | Meaning | Fallback if not configured or blank on the EDI partner |
+|---|---|---|
+| `SHIPMENT_NUMBER_DEFINITION_VERSION` | Shipment number definition version to use | `shipment_number_definition_version` from the request body, if present; otherwise the CargoSoft client's default |
+| `MAINDEPARTMENT` | Main department used for shipment numbering | `maindepartment` from the request body; if neither value is present, the request is rejected |
+| `SUBDEPARTMENT` | Sub department used for shipment numbering | `subdepartment` from the request body; if neither value is present, the request is rejected |
+| `ADDRESS_FORMAT` | Address format used for shipment addresses | The CargoSoft client's default from the general company parameters |
+
+> Please note: If a request does not need to rely on the EDI partner's settings, for example during testing,
+> `shipment_number_definition_version`, `maindepartment`, and `subdepartment` can be supplied directly in the request
+> body.
 
 **Sequence**
 
@@ -243,6 +264,69 @@ The response contains the created shipment, including its unique shipment ID and
 - If no EDI partner matches the API username, the request is rejected and no shipment is created.
 - If required shipment numbering values cannot be resolved, the request is rejected.
 - If nested data fails validation, the complete shipment creation is rejected and nothing is created.
+
+## Look up an EDI code conversion
+
+**Goal**
+
+Translate an EDI partner's own code, for example a charge type or packaging code, into the corresponding CargoSoft
+internal code or vice versa, depending on direction.
+
+**Endpoint**
+
+Use [`POST /cargosoft/basicdata/codeconverter/lookup`](#operation/lookup).
+
+**Prerequisites**
+
+- The EDI code conversion must be configured in the CargoSoft master data.
+- The EDI partner, direction, and code type must be known. The source code is additionally required when looking up one
+  specific conversion.
+
+**Workflow**
+
+1. Build the lookup request from the `EDIPARTNER`, `DIRECTION`, and `CODETYPE` identifiers. The `DIRECTION` value must
+   be the raw single-character code stored in CargoSoft (`E` or `S`), not the `direction` value (`RECEIVE` or `SEND`)
+   returned on the response object:
+
+```json
+[
+  {
+    "match_mode": "EQUALS",
+    "key": "EDIPARTNER",
+    "value": "SAMPLEPARTNER"
+  },
+  {
+    "match_mode": "EQUALS",
+    "key": "DIRECTION",
+    "value": "E"
+  },
+  {
+    "match_mode": "EQUALS",
+    "key": "CODETYPE",
+    "value": "VERCO_T"
+  }
+]
+```
+
+2. Send the request without `SOURCECODE` to retrieve every conversion configured for the EDI partner's code table and
+   direction. Add `SOURCECODE` to look up one specific conversion.
+3. `DIRECTION` + `CODETYPE` + `SOURCECODE` can also be used without `EDIPARTNER`. This returns every matching
+   conversion across all EDI partners that share the source code.
+
+**Result**
+
+The response contains the matching EDI code conversion records, including their source and target codes. The result is
+paginated and includes the `X-Page-Count` and `X-Row-Count` response headers.
+
+**Lookup behavior**
+
+The following identifier combinations are served from a cache because this master data changes very rarely:
+
+- `EDIPARTNER` + `DIRECTION` + `CODETYPE`
+- `EDIPARTNER` + `DIRECTION` + `CODETYPE` + `SOURCECODE`
+- `DIRECTION` + `CODETYPE` + `SOURCECODE`
+
+Any other identifier combination is looked up directly in the database.
 
 ## Retrieve a shipment
 
@@ -503,50 +587,9 @@ provider status can also create a customer-defined shipment status or update shi
   provider status. `unique_provider_message_number` is stored for traceability but is not an idempotency key. Because
   no provider status retrieval endpoint is available, verify the result in CargoSoft before retrying.
 
-## Retrieve shipment events
+<p id='CHAPTER_SHIPMENT_STATUS_MODEL'></p>
 
-**Goal**
-
-Retrieve the CargoSoft-defined events currently available for an existing shipment.
-
-**Endpoint**
-
-Use [`GET /cargosoft/shipment/{id}/events`](#operation/retrieveEvents).
-
-**Prerequisites**
-
-The unique shipment ID must be known. If only business identifiers are available, first follow the
-[Retrieve a shipment](#section/use-cases/retrieve-a-shipment) workflow.
-
-**Sequence**
-
-![RetrieveShipmentEvents][SeqRetrieveShipmentEvents]
-
-[SeqRetrieveShipmentEvents]: ./resources/Seq_retrieve_shipment_event.svg "Use case to retrieve shipment events"
-
-**Workflow**
-
-1. Resolve the shipment with `POST /cargosoft/shipment/lookup` when its unique ID is not yet known.
-2. Extract the shipment `id` from the lookup result.
-3. Call `GET /cargosoft/shipment/{id}/events` with that ID.
-
-**Result**
-
-The response contains the available CargoSoft shipment events. An event represents either a planned or an actual
-instance. For the differences between provider status, customer-defined shipment status, and shipment events, see
-[Shipment status model](#section/concepts-and-configuration/shipment-status-model).
-
-**Error handling**
-
-- The response may not contain every possible event because some events may not have been recorded for the shipment yet.
-- Verify the shipment ID when no events are returned unexpectedly.
-
-# Concepts and configuration
-
-This section contains background information and configuration rules used by the workflows above. It does not describe
-additional API workflows.
-
-## Shipment status model
+### Shipment status model
 
 CargoSoft stores status information in different pools. The following diagram shows how status messages can be mapped
 and processed.
@@ -584,44 +627,40 @@ configured accordingly. It represents either a planned or an actual instance and
 background processes. The complete list of event codes is documented by the
 [`GET /cargosoft/shipment/{id}/events`](#operation/retrieveEvents) endpoint.
 
-<p id='CHAPTER_EDIPARTNER_SETTINGS'></p>
+## Retrieve shipment events
 
-## EDI partner settings
+**Goal**
 
-Generating a shipment number requires three pieces of information: the shipment number definition (posdef), the main
-department, and the sub department. Each value can be configured individually on the EDI partner determined from the
-authenticated API user. A configured EDI partner value takes precedence; an empty or blank value is treated as not
-configured. Each key is resolved independently, and unrelated qualifiers on the EDI partner are ignored.
+Retrieve the CargoSoft-defined events currently available for an existing shipment.
 
-| Key | Meaning | Fallback if not configured or blank on the EDI partner |
-|---|---|---|
-| `SHIPMENT_NUMBER_DEFINITION_VERSION` | Shipment number definition version to use | `shipment_number_definition_version` from the request body, if present; otherwise the CargoSoft client's default |
-| `MAINDEPARTMENT` | Main department used for shipment numbering | `maindepartment` from the request body; if neither value is present, the request is rejected |
-| `SUBDEPARTMENT` | Sub department used for shipment numbering | `subdepartment` from the request body; if neither value is present, the request is rejected |
-| `ADDRESS_FORMAT` | Address format used for shipment addresses | The CargoSoft client's default from the general company parameters |
+**Endpoint**
 
-> Please note: If a request does not need to rely on the EDI partner's settings, for example during testing,
-> `shipment_number_definition_version`, `maindepartment`, and `subdepartment` can be supplied directly in the request
-> body.
+Use [`GET /cargosoft/shipment/{id}/events`](#operation/retrieveEvents).
 
-## EDI code conversion
+**Prerequisites**
 
-An EDI code conversion translates an EDI partner's own code (for example for a charge type or packaging code)
-into the corresponding CargoSoft internal code, or vice versa, depending on direction. They are looked up with
-the [lookup](#operation/lookup) endpoint of the code conversion functional group, using a combination of the
-`EDIPARTNER`, `DIRECTION`, `CODETYPE` and `SOURCECODE` identifiers.
+The unique shipment ID must be known. If only business identifiers are available, first follow the
+[Retrieve a shipment](#section/use-cases/retrieve-a-shipment) workflow.
 
-Two identifier combinations are served from a cache instead of querying the database on every request, since
-this master data changes very rarely:
+**Sequence**
 
-- `EDIPARTNER` + `DIRECTION` + `CODETYPE`: returns every code conversion configured for that EDI partner's
-  table/direction.
-- `EDIPARTNER` + `DIRECTION` + `CODETYPE` + `SOURCECODE`: returns the one specific conversion for that source
-  code.
+![RetrieveShipmentEvents][SeqRetrieveShipmentEvents]
 
-Omitting `EDIPARTNER` from a `DIRECTION` + `CODETYPE` + `SOURCECODE` lookup returns every matching conversion
-across all EDI partners that happen to share the same source code - also served from the cache. Any other
-identifier combination is looked up directly against the database.
+[SeqRetrieveShipmentEvents]: ./resources/Seq_retrieve_shipment_event.svg "Use case to retrieve shipment events"
 
-> Please note: the `DIRECTION` identifier's value must be the raw single-character code as stored in the
-> CargoSoft TMS (`E` or `S`), not the `direction` value (`RECEIVE`/`SEND`) shown on the response object.
+**Workflow**
+
+1. Resolve the shipment with `POST /cargosoft/shipment/lookup` when its unique ID is not yet known.
+2. Extract the shipment `id` from the lookup result.
+3. Call `GET /cargosoft/shipment/{id}/events` with that ID.
+
+**Result**
+
+The response contains the available CargoSoft shipment events. An event represents either a planned or an actual
+instance. For the differences between provider status, customer-defined shipment status, and shipment events, see
+[Shipment status model](#CHAPTER_SHIPMENT_STATUS_MODEL).
+
+**Error handling**
+
+- The response may not contain every possible event because some events may not have been recorded for the shipment yet.
+- Verify the shipment ID when no events are returned unexpectedly.
