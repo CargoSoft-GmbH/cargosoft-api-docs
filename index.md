@@ -17,7 +17,7 @@ Wählen Sie das gewünschte Produkt aus:
 {% cards %}
   {% card
     title="CargoSoft TMS API"
-    to="/products/tms-api/"
+    to="/tms-api"
     icon="solid truck"
     variant="outlined"
   %}
@@ -26,10 +26,10 @@ Wählen Sie das gewünschte Produkt aus:
 
   {% card
     title="CargoSoft ECM API"
-    to="/products/ecm-api/"
+    to="/ecm-api"
     icon="solid folder-open"
     variant="outlined"
   %}
-    Schnittstellen für Dokumente, Archive und ECM-Funktionen.
+    Schnittstellen ECM-Funktionen.
   {% /card %}
 {% /cards %}
