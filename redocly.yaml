@@ -12,6 +12,7 @@ openapi:
   showExtensions: false
 reunite:
   ignoreLinkChecker: true
+  
 products:
   tms-api:
     name: CargoSoft TMS API
@@ -19,7 +20,3 @@ products:
   ecm-api:
     name: CargoSoft ECM API
     folder: products/ecm-api/
-
-# Hide sidebar on landing pages
-sidebar:
-  hide: true

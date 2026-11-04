@@ -1,0 +1,4 @@
+- group: CargoSoft API
+  expanded: true
+  items:
+    - directory: .
