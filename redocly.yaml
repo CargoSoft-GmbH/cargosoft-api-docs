@@ -3,10 +3,13 @@ versionPicker:
 footer:
   copyrightText: © CargoSoft GmbH
   items:
-    - group: Social
+    - group: Links
       items:
         - label: facebook
           href: 'https://www.facebook.com/CargoSoftGmbH/?locale=de_DE'
+          external: true
+        - label: CargoSoft Website
+          href: 'https://www.cargosoft.de'
           external: true
 openapi:
   showExtensions: false
