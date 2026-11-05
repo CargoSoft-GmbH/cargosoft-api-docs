@@ -1,7 +1,13 @@
+:root {
+  --font-family-base: Roboto, sans-serif;
+  --heading-font-family: var(--font-family-base);
+}
+
 :root table {
   --md-table-border-width: 0px;
-  --md-table-header-bg-color: #e9eef5;
+  --md-table-header-bg-color: #0069b4cc;
   --md-table-head-font-weight: 700;
+  --md-table-head-text-color: white;
   border-collapse: separate;
 }
 
@@ -14,7 +20,7 @@
 
 /* Alternating row colors */
 :root table tbody tr:nth-child(even) > td {
-  background-color: #f6f8fa;
+  background-color: #e2e2e2;
 }
 
 /* Remove vertical borders */
