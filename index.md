@@ -9,7 +9,7 @@ navigation:
 ---
 
 {% img
-  src="./images/cargosoft_logo.svg"
+  srcSet="./images/cargosoft_logo.svg light, ./images/cargosoft_logo-weiss.svg dark"
   alt="CargoSoft GmbH"
   width=320
   align="left"
@@ -21,16 +21,16 @@ navigation:
   {% card
     title="CargoSoft TMS API"
     to="/tms-api"
-    icon="./images/cargosoft_logo.svg"
+    icon="envelopes-bulk"
     variant="outlined"
   %}
-The CargoSoft TMS API enables seamless integration of essential transport management functionalities into external applications and business processes. It provides interfaces for real-time shipment tracking, shipment data retrieval, CO₂ emissions calculation, vessel arrivals and departures, and slot bookings. By offering standardized access to these features, the API helps automate logistics processes, improve shipment visibility, and efficiently connect existing systems.
+    The CargoSoft TMS API enables seamless integration of essential transport management functionalities into external applications and business processes. It provides interfaces for real-time shipment tracking, shipment data retrieval, CO₂ emissions calculation, vessel arrivals and departures, and slot bookings. By offering standardized access to these features, the API helps automate logistics processes, improve shipment visibility, and efficiently connect existing systems.
   {% /card %}
 
   {% card
     title="CargoSoft ECM API"
     to="/ecm-api"
-    icon="./images/cargosoft_logo.svg"
+    icon="money-check-dollar"
     variant="outlined"
   %}
     The CargoSoft ECM API enables seamless integration of core ECM functionalities into external applications and business processes. It provides interfaces for rate searches, quotation creation, and master data retrieval. By offering standardized access to these features, the API helps automate quotation processes and efficiently connect existing systems.
