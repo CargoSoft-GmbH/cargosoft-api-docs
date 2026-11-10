@@ -92,12 +92,12 @@ value:
       address_type: G
       address_number: 2
       printed_address:
-        line_1: AROY-D
-        line_2: 45/1-2 Phra Athit Rd, Chana Songkhram
+        line_1: Company
+        line_2: Phra Athit Rd
         line_3: 10200 Bangkok
         line_4: THAILAND
         line_5:
-      street: 45/1-2 Phra Athit Rd, Chana Songkhram
+      street: Phra Athit Rd
       postal_code: '10200'
       city: Bangkok
       state:
@@ -116,11 +116,11 @@ value:
       address_number: 3
       printed_address:
         line_1: Thailand DES-Agent Bangkok
-        line_2: Trad Road Km 15 Rachathewa
+        line_2: Trad Road
         line_3: 10540 Bangkok
         line_4: THAILAND
         line_5:
-      street: Trad Road Km 15 Rachathewa
+      street: Trad Road
       postal_code: '10540'
       city: Bangkok
       state:
@@ -138,12 +138,12 @@ value:
       address_type: G
       address_number: 4
       printed_address:
-        line_1: Thailand DES-Agent Surat Thani
-        line_2: Hua Toei, Amphoe Phunphin
+        line_1: Thailand DES-Agent
+        line_2: Thailand-Street 23
         line_3: 10545 Surat Thani
         line_4: THAILAND
         line_5:
-      street: Hua Toei, Amphoe Phunphin
+      street: Thailand-Street 23
       postal_code: '10545'
       city: Surat Thani
       state:
@@ -161,8 +161,8 @@ value:
       address_type: G
       address_number: 5
       printed_address:
-        line_1: Adresse für ADRESSVORSCHLAG
-        line_2: Adresse für ADRESSVORSCHLAG
+        line_1: Carrier UHF
+        line_2: Carrier UHF
         line_3: Straßenname 123
         line_4: 28359 Bremen
         line_5: Deutschland
@@ -184,12 +184,12 @@ value:
       address_type: G
       address_number: 6
       printed_address:
-        line_1: EKB Container Logistik GmbH & Co. KG
+        line_1: Container Logistik GmbH
         line_2: Container- und Frachtguttransporte
-        line_3: Richard-Dunkel-Straße 120
+        line_3: Neu-Straße 14
         line_4: 28819 Bremen
         line_5: Deutschland
-      street: Richard-Dunkel-Straße 120
+      street: Neu-Straße 14
       postal_code: '28819'
       city: Bremen
       state:
@@ -207,12 +207,12 @@ value:
       address_type: G
       address_number: 7
       printed_address:
-        line_1: Addicks & Kreye Container Service GmbH
-        line_2: Windhukstraße 20-26
+        line_1: Container Service GmbH
+        line_2: Heerstraße 20-26
         line_3: 28237 Bremen
         line_4: Deutschland
         line_5:
-      street: Windhukstraße 20-26
+      street: Heerstraße 20-26
       postal_code: '28237'
       city: Bremen
       state:
@@ -230,7 +230,7 @@ value:
       address_type: G
       address_number: 8
       printed_address:
-        line_1: AHS Bremen Aviation
+        line_1: Handling Bremen
         line_2: Handling Services GmbH
         line_3: Terminal 1, Flughafenallee 21
         line_4: 28199 Bremen

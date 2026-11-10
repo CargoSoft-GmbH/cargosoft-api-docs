@@ -22,8 +22,6 @@ tags:
 - name: Shipment
   description: The following chapter will give you an overview about the shipment
     endpoints and their function.
-- name: ShipmentMemo
-  description: Lookup of order memo lines (eamemo_t) attached to a shipment.
 - name: Provider Status
   description: Create provider statuses and associate them with CargoSoft shipments.
 paths:
@@ -930,7 +928,7 @@ paths:
   /cargosoft/shipment/memo/lookup:
     post:
       tags:
-      - ShipmentMemo
+      - Shipment
       summary: Lookup shipment memo lines
       description: "Looks up order memo lines (eamemo_t) attached to a shipment, typically\
         \ by client and shipment_number together (the shipment they were created for)."
@@ -1018,7 +1016,7 @@ paths:
   /cargosoft/shipment/memo:
     get:
       tags:
-      - ShipmentMemo
+      - Shipment
       summary: Retrieve all shipment memo lines
       description: Scroll through all existing shipment memo line records.
       operationId: retrieveAll_1
@@ -1054,7 +1052,7 @@ paths:
   /cargosoft/shipment/memo/{id}:
     get:
       tags:
-      - ShipmentMemo
+      - Shipment
       summary: Retrieve shipment memo line
       description: Retrieve a specific shipment memo line record with the CargoSoft
         database id.

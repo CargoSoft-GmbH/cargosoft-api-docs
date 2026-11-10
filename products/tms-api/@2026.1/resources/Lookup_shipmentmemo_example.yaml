@@ -4,4 +4,4 @@ value:
     value: '001'
   - match_mode: EQUALS
     key: SHIPMENT_NUMBER
-    value: BRUNOTEST0001
+    value: BRE-961864646545
